@@ -1,4 +1,4 @@
-import re
+#import re
 
 KEYWORS = {
     'ቁጥር': 'INT', 
@@ -39,7 +39,10 @@ PLUS_T = 'PLUS'
 MINUS_T = 'MINUS'
 MULT_T = 'MULT'
 DIVIDE_T = 'DIVIDE'
+POWER_T = 'POWER'
 COMMA_T = 'COMMA'
+
+EOF_T = 'EOF'
 
 ELIF = 'ደግሞ'
 WHILE = 'ድረስ'
@@ -47,3 +50,16 @@ WHILE = 'ድረስ'
 
 NUMS = '0123456789'
 ALPHANUMERAL = r'[a-zA-Z\u1200-\u135A0-9_]+'
+
+
+#####################################################################
+## Error Message
+#####################################################################
+
+ILLEGAL_CHARACTER_ERROR = 'የማይታወቅ ካራክተር አለ።'
+ILLEGAL_SYNTAX_ERROR = 'የተሰበረ ህግ አለ።'
+RUNTIME_ERROR = 'ያልተጠበቀ ስተት አለ።'
+
+RPARAM_MISSING_ERROR = 'መዝጊያ ቅንፍ ")" ተረስታል'
+INT_MISSING_ERROR = 'ቁጥር ተረስታ'
+DIVISION_BY_ZERO_ERROR = 'በዘሮ ማካፈል አይቻልም'

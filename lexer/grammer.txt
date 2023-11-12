@@ -1,0 +1,14 @@
+expression ::= KEYWORD:(INT) IDENTIFIER EQUAL expression
+             = term ((PLUS | MINUS) term)*
+
+term := factor ((MULT | DIVIDE) factor)*
+
+factor := (PLUS | MINUS) factor
+        = power
+
+power := atom (POWER factor)*
+
+atom := INT | IDENTIFIER
+      = LPRAM expression RPARAM
+
+
