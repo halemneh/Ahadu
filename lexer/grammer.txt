@@ -1,5 +1,12 @@
-expression ::= KEYWORD:(INT) IDENTIFIER EQUAL expression
-             = term ((PLUS | MINUS) term)*
+statement := (NEWLINE* TAB* experssion)*
+
+expression ::= KEYWORD:INT IDENTIFIER EQUAL arith_expr
+             = comp_expr ((KEYWORD:AND | KEYWORD|OR) comp_expr)*
+
+comp_expr := KEYWORD:NOT comp_expr
+           = arith_expr ((EQ | LT | LTE | GT | GTE | NEQ) arith_expr)*
+
+arith_expr := term ((PLUS | MINUS) term)*
 
 term := factor ((MULT | DIVIDE) factor)*
 
@@ -10,5 +17,7 @@ power := atom (POWER factor)*
 
 atom := INT | IDENTIFIER
       = LPRAM expression RPARAM
+ 
+
 
 
