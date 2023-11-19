@@ -8,13 +8,7 @@ class NumberNode:
         self.col = token.col
 
     def __repr__(self):
-        return f'NN {self.token}'
-    
-class BoolNode:
-    def __init__(self, token):
-        self.value = token.value
-        self.line = token.line
-        self.col = token.col
+        return f'{self.token}'
     
 class BinaryOpNode:
     def __init__(self, left_node, op_token, right_node):
@@ -25,7 +19,7 @@ class BinaryOpNode:
         self.col = left_node.col
 
     def __repr__(self):
-        return f'(BN {self.left_node}, {self.op_token}, {self.right_node})'
+        return f'({self.left_node}, {self.op_token}, {self.right_node})'
 
 class UnaryOpNode:
     def __init__(self, op_token, node):
@@ -35,7 +29,7 @@ class UnaryOpNode:
         self.col = op_token.col
 
     def __repr__(self):
-        return f'(UN {self.op_token}, {self.node})'
+        return f'({self.op_token}, {self.node})'
     
 class VarAssignNode:
     def __init__(self, identifier, value):
@@ -55,12 +49,25 @@ class VarAccessNode:
 
     def __repr__(self):
         return f'({self.name.value})'
+    
+class StatementNode:
+    def __init__(self, expr_list):
+        self.expr_list = expr_list
+        self.line = expr_list[0].line
+        self.col = expr_list[0].col
 
+    def __repr__(self):
+        result = ''
+        for i in range(len(self.expr_list)):
+            result += f'({self.expr_list[i]}),\n'
+
+        return result
 # -----------------------------------------------------------------------------
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
         self.index = -1
+        self.indent = 0
         self.next_token()
 
     def next_token(self):
@@ -73,23 +80,87 @@ class Parser:
             self.curr_token = self.tokens[self.index]
         return self.curr_token
     
+    def prev_tokens(self):
+        """
+        Returns the prevous token in self.tokens after assigning it to 
+        self.curr_token and reversing self.index by one.
+        """
+        self.index -= 1
+        if self.index >= 0:
+            self.curr_token = self.tokens[self.index]
+        return self.curr_token
+    
     def parse(self):
         """
         Returns an node object and an error if there is any after parsing 
         self.tokens
         """
-        nodes, error = self.experssion()
+        nodes, error = self.statements()
 
         if not error and self.curr_token.type != EOF_T:
             return None, IllegalSyntaxError(self.curr_token.line,
                                             self.curr_token.col, 'MISSING OPS')
-        return nodes, None
+        return nodes, error
     
-    def statement(self):
+    def statements(self):
         """
         
         """
-        pass
+        statements = []
+        # start_line = self.curr_token.line
+        # start_col = self.curr_token.col
+        done = False
+
+        while self.curr_token.type == NEWLINE_T:
+            self.next_token()
+
+        tab_count = 0
+        while self.curr_token.type == TAB_T:
+            tab_count += 1
+            self.next_token()
+
+        if tab_count < self.indent:
+            for _ in range(tab_count):
+                self.prev_tokens()
+            done = True
+        elif tab_count > self.indent:
+            return None, IndentationError(self.curr_token.line, 
+                                          self.curr_token.col)
+
+        expr, error = self.experssion()
+        if error: return None, error
+        statements.append((expr))
+
+        while True:
+            line_count = 0
+            while self.curr_token.type == NEWLINE_T:
+                line_count += 1
+                self.next_token()
+
+            if line_count == 0: done = True
+            if done: break
+            
+            tab_count = 0
+            while self.curr_token.type == TAB_T:
+                tab_count += 1
+                self.next_token()
+
+            if tab_count < self.indent:
+                for _ in range(tab_count):
+                    self.prev_tokens()
+                done = True
+                continue
+            elif tab_count > self.indent:
+                return None, IndentationError(self.curr_token.line, 
+                                            self.curr_token.col)
+            
+            expr, error = self.experssion()
+            if error:
+                return None, error
+            
+            statements.append(expr)
+
+        return StatementNode(statements), None
     
     def binary_op(self, func_a, ops, func_b=None):
         """
@@ -206,3 +277,4 @@ class Parser:
         
         """
         return self.binary_op(self.term, (PLUS_T, MINUS_T))
+    

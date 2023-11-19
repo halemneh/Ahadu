@@ -39,8 +39,20 @@ class Interpreter:
         """
         Raises an exception if no visit method is found for a node. 
         """
-        print(node)
+        #print(node)
         raise Exception(f'No visit_{type(node).__name__} method defined!')
+    
+    def visit_StatementNode(self, node, context):
+        """
+        
+        """
+        for expr in node.expr_list:
+            value, error = self.visit(expr, context)
+            if error: return None, error
+            #print(value)
+
+        return None, None
+        
     
     def visit_NumberNode(self, node, context):
         """
