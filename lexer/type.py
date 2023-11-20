@@ -1,4 +1,5 @@
 from error import *
+import copy
 
 class DefaultType:
     def __init__(self):
@@ -19,6 +20,9 @@ class DefaultType:
         self.line = line
         self.col = col
         return self
+    
+    def copy():
+        return None
     
     def add(self, x):
         """
@@ -144,6 +148,13 @@ class Number(DefaultType):
     
     def __repr__(self):
         return str(self.value)
+    
+    def copy(self):
+        """
+        Return a copy Number object of self.
+        """
+        return Number(self.value).set_context(self.context).set_position(
+            self.line, self.col)
     
     def add(self, other):
         """
@@ -298,6 +309,13 @@ class String(DefaultType):
 
     def __repr__(self):
         return f'"{self.value}"'
+    
+    def copy(self):
+        """
+        Return a copy String object of self.
+        """
+        return String(self.value).set_context(self.context).set_position(
+            self.line, self.col)
 
     def add(self, x):
         """
@@ -305,6 +323,7 @@ class String(DefaultType):
         an error if x is not a String object.
         """
         if isinstance(x, String):
+            
             return String(self.value + x.value).set_context(
                 self.context), None
         else:
@@ -334,6 +353,22 @@ class String(DefaultType):
         else:
             return None, RTError(x.line, x.col, "Illegal Operation" , self.context)
         
+    def slice(self, start, end):
+        """
+        Returns a String object with self.value sliced starting from the 
+        start-th element (inclusive) and ending at the end-th element 
+        (exclusive).
+        """
+        if not start: start = Number(0)
+        if not end: end = Number(len(self.value))
+        if not isinstance(start, Number):
+            return None, RTError(start.line, start.col, "Illegal Operation1" , self.context)
+        elif not isinstance(end, Number):
+            return None, RTError(end.line, end.col, "Illegal Operation2" , self.context)
+        else:
+            return String(self.value[start.value: end.value]), None
+
+        
 ###############################################################################
 ###############################################################################
         
@@ -343,14 +378,23 @@ class Array(DefaultType):
         self.value = value
 
     def __repr__(self):
-        return f'[{", ".join([repr(elem) for elem in self.value])}]'
- 
+        return str(self.value)
+    
+    def copy(self):
+        """
+        Return a copy Number object of self.
+        """
+        copy = Array(self.value)
+        copy.set_context(self.context).set_position(self.line, self.col)
+        return copy
+    
     def add(self, x):
         """
         Returns an Array object with x concatinated at the end of self.
         """
-        return Array(self.value.append(x.value)).set_context(
-            self.context), None
+        new_array = copy.deepcopy(self)
+        new_array.value.append(x)
+        return new_array, None
     
     def join(self, x):
         """
@@ -385,7 +429,7 @@ class Array(DefaultType):
         if not end: end = Number(len(self.value))
         if not isinstance(start, Number):
             return None, RTError(start.line, start.col, "Illegal Operation" , self.context)
-        elif not isinstance(end, Number) and isinstance(end, Number):
+        elif not isinstance(end, Number):
             return None, RTError(end.line, end.col, "Illegal Operation" , self.context)
         else:
             return Array(self.value[start.value: end.value]), None

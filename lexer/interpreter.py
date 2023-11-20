@@ -39,7 +39,6 @@ class Interpreter:
         """
         Raises an exception if no visit method is found for a node. 
         """
-        #print(node)
         raise Exception(f'No visit_{type(node).__name__} method defined!')
     
     def visit_StatementNode(self, node, context):
@@ -76,6 +75,7 @@ class Interpreter:
         result = None
 
         if node.op_token.type == PLUS_T:
+            print(right)
             result, error = left.add(right)
         elif node.op_token.type == MINUS_T:
             result, error = left.subtract(right)
@@ -113,7 +113,6 @@ class Interpreter:
             if right[1] != None:
                 end, error = self.visit(right[1], context)
                 if error: return None, error
-
             result, error = left.slice(start, end)
         
 
@@ -162,8 +161,9 @@ class Interpreter:
         if not value:
             return None, RTError(node.line, node.col, UNDEFINED_IDENTIFIER, 
                                  context, identifier)
-        # Need copy 
-        return value.set_context(context).set_position(node.line, node.col), None
+        
+        return value.copy().set_context(context).set_position(
+            node.line, node.col), None
         
     def visit_IfNode(self, node, context):
         """
