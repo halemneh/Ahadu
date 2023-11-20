@@ -100,6 +100,15 @@ class WhileNode:
 
     def __repr__(self):
         return f'(WHILE: {self.condition}:-\n {self.statement}\n)'
+    
+class StringNode:
+    def __init__(self, string):
+        self.string = string
+        self.line = self.string.line
+        self.col = self.string.col
+
+    def __repr__(self):
+        return f'"{self.string.value}"'
 
 # -----------------------------------------------------------------------------
 class Parser:
@@ -261,7 +270,9 @@ class Parser:
                 return None, IllegalSyntaxError(self.curr_token.line, 
                                                 self.curr_token.col, 
                                                 RPARAM_MISSING_ERROR)
-         
+        elif token.type == STRING_T:
+            self.next_token()
+            return StringNode(token), None
         elif token.match(KEYWORD_T, IF_T):
             return None, IllegalSyntaxError(token.line, token.col, 
                                             "Expected Expression before IF")

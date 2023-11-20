@@ -5,6 +5,7 @@ BOOL_T = 'BOOL'
 INT_T = 'INT'
 BOOL_T = 'BOOL'
 CHAR_T = 'CHAR'
+STRING_T = 'STRING'
 
 KEYWORD_T = 'KEYWORD'
 IDENTIFIER_T = 'IDENTIFIER'
@@ -76,6 +77,8 @@ KEYWORS = {
 
 NUMS = '0123456789'
 ALPHANUMERAL = r'[a-zA-Z\u1200-\u135A0-9_]+'
+
+ESCAPE = {'n': '\n', 't': '\t'}
 
 
 #####################################################################

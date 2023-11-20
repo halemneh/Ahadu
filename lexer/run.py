@@ -2,7 +2,7 @@ from lexer import Lexer
 from parser import Parser
 from interpreter import *
 
-import pdb
+#import pdb
 
 with open("sample.txt") as file:
     text = file.read()
@@ -25,7 +25,7 @@ if error == None:
     print("##                 Parser Result                 ###")
     print("####################################################")
 
-    pdb.set_trace()
+    #pdb.set_trace()
     ast, err = Parser(tokens).parse()
 
     if err:

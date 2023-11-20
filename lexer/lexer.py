@@ -181,7 +181,7 @@ class Lexer:
         if self.curr_char == '=':
             self.next_char()
             return Token(NEQ_T, start_line, start_col)
-        return Token(KEYWORD_T, NOT_T, start_line, start_col)
+        return Token(KEYWORD_T, start_line, start_col, NOT_T)
     
     def check_then(self):
         """
@@ -194,6 +194,31 @@ class Lexer:
             self.next_char()
             return Token(THEN_T, start_line, start_col)
         return Token(COLON_T, start_line, start_col)
+    
+    def check_string(self):
+        """
+        
+        """
+        start_line = self.line
+        start_col = self.col
+        string = ''
+        escape = False
+        quote = "'" if self.curr_char == "'" else '"'
+        self.next_char()
+
+        while self.curr_char != None and (self.curr_char != quote or escape):
+            if escape:
+                string += ESCAPE.get(self.curr_char, self.curr_char)
+                escape = False
+            else:
+                if self.curr_char == '\\':
+                    escape = True
+                else:
+                    string += self.curr_char
+
+            self.next_char()
+        self.next_char()
+        return Token(STRING_T, start_line, start_col, string)
     
     def lexer(self):
         """
@@ -213,6 +238,8 @@ class Lexer:
                 if err:
                     return [], err
                 tokens += tab_tokens
+            elif self.curr_char == '"' or self.curr_char == "'":
+                tokens.append(self.check_string())
             elif self.curr_char in NUMS:
                 tokens.append(self.num_token())
             elif re.match(ALPHANUMERAL, self.curr_char):
@@ -226,7 +253,7 @@ class Lexer:
             elif self.curr_char == '!':
                 tokens.append(self.check_negation())
             elif self.curr_char == '&':
-                tokens.append(Token(KEYWORD_T, AND_T, self.line, self.col))
+                tokens.append(Token(KEYWORD_T, self.line, self.col, AND_T))
                 self.next_char()
             elif self.curr_char == '+':
                 tokens.append(Token(PLUS_T, self.line, self.col))

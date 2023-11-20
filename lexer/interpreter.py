@@ -1,4 +1,4 @@
-from number import Number
+from type import *
 from constants import *
 from error import *
 
@@ -56,7 +56,7 @@ class Interpreter:
     
     def visit_NumberNode(self, node, context):
         """
-        
+        Creates and returns a Number object for the NumberNode.
         """
         return Number(node.token.value).set_position(
             node.line, node.col).set_context(context), None
@@ -75,31 +75,31 @@ class Interpreter:
         result = None
 
         if node.op_token.type == PLUS_T:
-            result, error = left.added_to(right)
+            result, error = left.add(right)
         elif node.op_token.type == MINUS_T:
-            result, error = left.subbed_to(right)
+            result, error = left.subtract(right)
         elif node.op_token.type == MULT_T:
-            result, error = left.multiplied_to(right)
+            result, error = left.multiply(right)
         elif node.op_token.type == DIVIDE_T:
-            result, error = left.divided_to(right)
+            result, error = left.divid(right)
         elif node.op_token.type == POWER_T:
-            result, error = left.powered_to(right)
+            result, error = left.power(right)
         elif node.op_token.type == LT_T:
-            result, error = left.lt_to(right)
+            result, error = left.lt(right)
         elif node.op_token.type == LTE_T:
-            result, error = left.lte_to(right)
+            result, error = left.lte(right)
         elif node.op_token.type == GT_T:
-            result, error = left.gt_to(right)
+            result, error = left.gt(right)
         elif node.op_token.type == GTE_T:
-            result, error = left.gte_to(right)
+            result, error = left.gte(right)
         elif node.op_token.type == EQ_T:
-            result, error = left.eq_to(right)
+            result, error = left.eq(right)
         elif node.op_token.type == NEQ_T:
-            result, error = left.neq_to(right)
+            result, error = left.neq(right)
         elif node.op_token.match(KEYWORD_T, AND_T):
-            result, error = left.and_to(right)
+            result, error = left.and_(right)
         elif node.op_token.match(KEYWORD_T, OR_T):
-            result, error = left.or_to(right)
+            result, error = left.or_(right)
         
 
         if error:
@@ -117,9 +117,9 @@ class Interpreter:
         error = None
 
         if node.op_token.type == MINUS_T:
-            number, error = number.multiplied_to(Number(-1))
+            number, error = number.multiply(Number(-1))
         elif node.op_token.match(KEYWORD_T, NOT_T):
-            number, error = number.not_to()
+            number, error = number.not_()
 
         if error:
             return None, error
@@ -184,4 +184,11 @@ class Interpreter:
             if error: return None, error
         
         return value, None
+    
+    def visit_StringNode(self, node, context):
+        """
+        Creates and returns a String object for the StringNode.
+        """
+        return String(node.string.value).set_position(
+            node.line, node.col).set_context(context), None
             
