@@ -24,103 +24,109 @@ class DefaultType:
         """
         Returns an error since the defaultType doen't allow addition.
         """
-        return None, RuntimeError(x.line, x.col, "Illegal Operation")
+        return None, RTError(x.line, x.col, "Illegal Operation", self.context)
     
     def subtract(self, x):
         """
         Returns an error since the defaultType doen't allow subtraction.
         """
-        return None, RuntimeError(x.line, x.col, "Illegal Operation")
+        return None, RTError(x.line, x.col, "Illegal Operation", self.context)
     
     def multiply(self, x):
         """
         Returns an error since the defaultType doen't allow multiplication.
         """
-        return None, RuntimeError(x.line, x.col, "Illegal Operation")
+        return None, RTError(x.line, x.col, "Illegal Operation", self.context)
     
     def divide(self, x):
         """
         Returns an error since the defaultType doen't allow division.
         """
-        return None, RuntimeError(x.line, x.col, "Illegal Operation")
+        return None, RTError(x.line, x.col, "Illegal Operation", self.context)
     
     def power(self, x):
         """
         Returns an error since the defaultType doen't allow exponential.
         """
-        return None, RuntimeError(x.line, x.col, "Illegal Operation")
+        return None, RTError(x.line, x.col, "Illegal Operation", self.context)
     
     def lt(self, x):
         """
         Returns an error since the defaultType doen't allow less than 
         comparison.
         """
-        return None, RuntimeError(x.line, x.col, "Illegal Operation")
+        return None, RTError(x.line, x.col, "Illegal Operation", self.context)
     
     def lte(self, x):
         """
         Returns an error since the defaultType doen't allow less than or equal
         to comparison.
         """
-        return None, RuntimeError(x.line, x.col, "Illegal Operation")
+        return None, RTError(x.line, x.col, "Illegal Operation", self.context)
     
     def gt(self, x):
         """
         Returns an error since the defaultType doen't allow greater than 
         comparison.
         """
-        return None, RuntimeError(x.line, x.col, "Illegal Operation")
+        return None, RTError(x.line, x.col, "Illegal Operation", self.context)
     
     def gte(self, x):
         """
         Returns an error since the defaultType doen't allow greater than or 
         equal to comparison.
         """
-        return None, RuntimeError(x.line, x.col, "Illegal Operation")    
+        return None, RTError(x.line, x.col, "Illegal Operation", self.context)
 
     def eq(self, x):
         """
         Returns an error since the defaultType doen't allow equal to  
         comparison.
         """
-        return None, RuntimeError(x.line, x.col, "Illegal Operation")
+        return None, RTError(x.line, x.col, "Illegal Operation" , self.context)
     
     def neq(self, x):
         """
         Returns an error since the defaultType doen't allow not equal to 
         comparison.
         """
-        return None, RuntimeError(x.line, x.col, "Illegal Operation")     
+        return None, RTError(x.line, x.col, "Illegal Operation" , self.context)     
 
     def or_(self, x):
         """
         Returns an error since the defaultType doen't allow or combinator.
         """
-        return None, RuntimeError(x.line, x.col, "Illegal Operation")
+        return None, RTError(x.line, x.col, "Illegal Operation" , self.context)
     
     def and_(self, x):
         """
         Returns an error since the defaultType doen't allow and combinator.
         """
-        return None, RuntimeError(x.line, x.col, "Illegal Operation")
+        return None, RTError(x.line, x.col, "Illegal Operation" , self.context)
     
     def at(self, x):
         """
         Returns an error since the defaultType doen't allow indexing.
         """
-        return None, RuntimeError(x.line, x.col, "Illegal Operation")
+        return None, RTError(x.line, x.col, "Illegal Operation" , self.context)
+    
+    def slice(self, start, end):
+        """
+        Returns an error since the defaultType doen't allow slicing.
+        """
+        return None, RTError(start.line, start.col, "Illegal Operation" , self.context)
     
     def not_(self):
         """
         Returns an error since the defaultType doen't allow negation.
         """
-        return None, RuntimeError(self.line, self.col, "Illegal Operation")
+        return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
     
     def run(self):
         """
         Returns an error since the defaultType doen't allow execution.
         """
-        return None, RuntimeError(self.line, self.col, "Illegal Operation")
+        return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
     
     def true(self):
         """
@@ -147,7 +153,7 @@ class Number(DefaultType):
             return Number(self.value + other.value).set_context(
                 self.context), None
         else:
-            return None, RuntimeError(self.line, self.col, "Illegal Operation")
+            return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
         
     def subtract(self, other):
         """
@@ -157,7 +163,7 @@ class Number(DefaultType):
             return Number(self.value - other.value).set_context(
                 self.context), None
         else:
-            return None, RuntimeError(self.line, self.col, "Illegal Operation")
+            return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
         
     def multiply(self, other):
         """
@@ -167,7 +173,7 @@ class Number(DefaultType):
             return Number(self.value * other.value).set_context(
                 self.context), None
         else:
-            return None, RuntimeError(self.line, self.col, "Illegal Operation")
+            return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
     
     def divid(self, other):
         """
@@ -180,7 +186,7 @@ class Number(DefaultType):
             return Number(self.value / other.value).set_context(
                 self.context), None
         else:
-            return None, RuntimeError(self.line, self.col, "Illegal Operation")
+            return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
         
     def power(self, other):
         """
@@ -190,7 +196,7 @@ class Number(DefaultType):
             return Number(self.value ** other.value).set_context(
                 self.context), None
         else:
-            return None, RuntimeError(self.line, self.col, "Illegal Operation")
+            return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
         
     def lt(self, other):
         """
@@ -200,7 +206,7 @@ class Number(DefaultType):
             return Number(int(self.value < other.value)).set_context(
                 self.context), None
         else:
-            return None, RuntimeError(self.line, self.col, "Illegal Operation")
+            return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
         
     def lte(self, other):
         """
@@ -210,7 +216,7 @@ class Number(DefaultType):
             return Number(int(self.value <= other.value)).set_context(
                 self.context), None
         else:
-            return None, RuntimeError(self.line, self.col, "Illegal Operation")
+            return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
         
     def gt(self, other):
         """
@@ -220,7 +226,7 @@ class Number(DefaultType):
             return Number(int(self.value > other.value)).set_context(
                 self.context), None
         else:
-            return None, RuntimeError(self.line, self.col, "Illegal Operation")
+            return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
         
     def gte(self, other):
         """
@@ -230,7 +236,7 @@ class Number(DefaultType):
             return Number(int(self.value >= other.value)).set_context(
                 self.context), None
         else:
-            return None, RuntimeError(self.line, self.col, "Illegal Operation")
+            return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
         
     def eq(self, other):
         """
@@ -240,7 +246,7 @@ class Number(DefaultType):
             return Number(int(self.value == other.value)).set_context(
                 self.context), None
         else:
-            return None, RuntimeError(self.line, self.col, "Illegal Operation")
+            return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
     
     def neq(self, other):
         """
@@ -250,7 +256,7 @@ class Number(DefaultType):
             return Number(int(self.value != other.value)).set_context(
                 self.context), None
         else:
-            return None, RuntimeError(self.line, self.col, "Illegal Operation")
+            return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
         
     def or_(self, other):
         """
@@ -260,7 +266,7 @@ class Number(DefaultType):
             return Number(int(self.value or other.value)).set_context(
                 self.context), None
         else:
-            return None, RuntimeError(self.line, self.col, "Illegal Operation")
+            return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
         
     def and_(self, other):
         """
@@ -270,7 +276,7 @@ class Number(DefaultType):
             return Number(int(self.value and other.value)).set_context(
                 self.context), None
         else:
-            return None, RuntimeError(self.line, self.col, "Illegal Operation")
+            return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
         
     def not_(self):
         """
@@ -302,7 +308,7 @@ class String(DefaultType):
             return String(self.value + x.value).set_context(
                 self.context), None
         else:
-            return None, RuntimeError(x.line, x.col, "Illegal Operation")
+            return None, RTError(x.line, x.col, "Illegal Operation" , self.context)
         
     def multiply(self, x):
         """
@@ -313,7 +319,7 @@ class String(DefaultType):
             return String(self.value * x.value).set_context(
                 self.context), None
         else:
-            return None, RuntimeError(x.line, x.col, "Illegal Operation")
+            return None, RTError(x.line, x.col, "Illegal Operation" , self.context)
         
     def at(self, x):
         """
@@ -322,15 +328,64 @@ class String(DefaultType):
         """
         if isinstance(x, Number):
             if x.value > 0 or x.value >= len(self.value):
-                return None, RuntimeError(x.line, x.col, "Index Out Of Bounds")
+                return None, RTError(x.line, x.col, "Index Out Of Bounds" , self.context)
             return String(self.value[x]).set_context(
                 self.context), None
         else:
-            return None, RuntimeError(x.line, x.col, "Illegal Operation")
+            return None, RTError(x.line, x.col, "Illegal Operation" , self.context)
         
 ###############################################################################
 ###############################################################################
         
+class Array(DefaultType):
+    def __init__(self, value):
+        super().__init__()
+        self.value = value
 
+    def __repr__(self):
+        return f'[{", ".join([repr(elem) for elem in self.value])}]'
  
+    def add(self, x):
+        """
+        Returns an Array object with x concatinated at the end of self.
+        """
+        return Array(self.value.append(x.value)).set_context(
+            self.context), None
     
+    def join(self, x):
+        """
+        Returns an Array object with x concatinated at the end of self or an 
+        error if x is not an Array object.
+        """
+        if isinstance(x, Array):
+            return Array(self.value + x.value).set_context(
+                self.context), None
+        else:
+            return None, RTError(x.line, x.col, "Illegal Operation" , self.context)
+        
+    def at(self, x):
+        """
+        Returns the element at the x-th index or an error if x is not an 
+        error or out of bounds.
+        """
+        if isinstance(x, Number):
+            if x.value >= len(self.value):
+                return None, RTError(x.line, x.col, "Index Out Of Bounds" , self.context)
+            return self.value[x.value].set_context(self.context), None
+        else:
+            return None, RTError(x.line, x.col, "Illegal Operation" , self.context)
+        
+    def slice(self, start, end):
+        """
+        Returns an Array object with self.value sliced starting from the 
+        start-th element (inclusive) and ending at the end-th element 
+        (exclusive).
+        """
+        if not start: start = Number(0)
+        if not end: end = Number(len(self.value))
+        if not isinstance(start, Number):
+            return None, RTError(start.line, start.col, "Illegal Operation" , self.context)
+        elif not isinstance(end, Number) and isinstance(end, Number):
+            return None, RTError(end.line, end.col, "Illegal Operation" , self.context)
+        else:
+            return Array(self.value[start.value: end.value]), None

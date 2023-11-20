@@ -68,8 +68,9 @@ class Interpreter:
         """
         left, error = self.visit(node.left_node, context)
         if error: return None, error
-        right, error = self.visit(node.right_node, context)
-        if error: return None, error
+        if node.op_token.type != SLICE_T:
+            right, error = self.visit(node.right_node, context)
+            if error: return None, error
         
         error = None
         result = None
@@ -100,6 +101,20 @@ class Interpreter:
             result, error = left.and_(right)
         elif node.op_token.match(KEYWORD_T, OR_T):
             result, error = left.or_(right)
+        elif node.op_token.type == AT_T:
+            result, error = left.at(right)
+        elif node.op_token.type == SLICE_T:
+            start = None
+            end = None
+            right = node.right_node
+            if right[0] != None:
+                start, error = self.visit(right[0], context)
+                if error: return None, error
+            if right[1] != None:
+                end, error = self.visit(right[1], context)
+                if error: return None, error
+
+            result, error = left.slice(start, end)
         
 
         if error:
@@ -147,8 +162,8 @@ class Interpreter:
         if not value:
             return None, RTError(node.line, node.col, UNDEFINED_IDENTIFIER, 
                                  context, identifier)
-        
-        return Number(value.value).set_context(context).set_position(node.line, node.col), None
+        # Need copy 
+        return value.set_context(context).set_position(node.line, node.col), None
         
     def visit_IfNode(self, node, context):
         """
@@ -190,5 +205,17 @@ class Interpreter:
         Creates and returns a String object for the StringNode.
         """
         return String(node.string.value).set_position(
+            node.line, node.col).set_context(context), None
+    
+    def visit_ArrayNode(self, node, context):
+        """
+        Creates and Returns an Array object fron the ArrayNode
+        """
+        elements = []
+        for elem in  node.array:
+            elem, error = self.visit(elem, context)
+            if error: return None, error
+            elements.append(elem)
+        return Array(elements).set_position(
             node.line, node.col).set_context(context), None
             

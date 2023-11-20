@@ -1,4 +1,4 @@
-statements := NEWLINE* TAB* experssion (NEWLINE+ experssion)* NEWLINE*
+statements := NEWLINE* TAB* experssion (NEWLINE+ experssion | if-expr | while_expr)* NEWLINE*
 
 expression ::= KEYWORD:INT IDENTIFIER EQUAL arith_expr
              = comp_expr ((KEYWORD:AND | KEYWORD|OR) comp_expr)*
@@ -15,8 +15,10 @@ factor := (PLUS | MINUS) factor
 
 power := atom (POWER factor)*
 
-atom := INT | IDENTIFIER
+atom := INT | IDENTIFIER | LIST | STRING | IDENTIFIER([INT?:INT?] | [INT])
       = LPRAM expression RPARAM
+
+array := LBRACKET (atom)* RBRACKET
 
 if-expr := expr KEYWORD:IF :- (expr if-a|if-b) |
            NEWLINE statements (indet + 1)

@@ -109,6 +109,12 @@ class StringNode:
 
     def __repr__(self):
         return f'"{self.string.value}"'
+    
+class ArrayNode:
+    def __init__(self, array, line, col):
+        self.array = array
+        self.line = line
+        self.col = col
 
 # -----------------------------------------------------------------------------
 class Parser:
@@ -258,6 +264,17 @@ class Parser:
             return NumberNode(token), None
         elif token.type == IDENTIFIER_T:
             self.next_token()
+            if self.curr_token.type == LBRACKET_T:
+                self.next_token()
+                index, op, error = self.slice()
+                if error: return None, error
+                if self.curr_token.type == RBRACKET_T:
+                    self.next_token()
+                    return BinaryOpNode(VarAccessNode(token), op, index), None
+                print(self.curr_token)
+                return None, IllegalSyntaxError(self.curr_token.line, 
+                                                self.curr_token.col, 
+                                                RBRACKET_MISSING_ERROR)
             return VarAccessNode(token), None
         elif token.type == LPARAM_T:
             self.next_token()
@@ -266,13 +283,24 @@ class Parser:
             if self.curr_token.type == RPARAM_T:
                 self.next_token()
                 return experssion, None
-            else:
-                return None, IllegalSyntaxError(self.curr_token.line, 
+            print(2)
+            return None, IllegalSyntaxError(self.curr_token.line, 
                                                 self.curr_token.col, 
                                                 RPARAM_MISSING_ERROR)
+        elif token.type == LBRACKET_T:
+            self.next_token()
+            array, error = self.array()
+            if error: return None, error
+            if self.curr_token.type == RBRACKET_T:
+                self.next_token()
+                return ArrayNode(array, token.line, token.col), None
+            return None, IllegalSyntaxError(self.curr_token.line, 
+                                                self.curr_token.col, 
+                                                RBRACKET_MISSING_ERROR)
         elif token.type == STRING_T:
             self.next_token()
             return StringNode(token), None
+        
         elif token.match(KEYWORD_T, IF_T):
             return None, IllegalSyntaxError(token.line, token.col, 
                                             "Expected Expression before IF")
@@ -286,6 +314,57 @@ class Parser:
         return None, IllegalSyntaxError(token.line, token.col, 
                                         "MISSING OPERATIONS")
     
+    def array(self):
+        """
+        Parses an array and returns a list of the array elements.
+        """
+        array = []
+        while self.curr_token.type != RBRACKET_T:
+            elem, error = self.atom()
+            if error: return None, error
+            array.append(elem)
+
+            if self.curr_token.type != COMMA_T and self.curr_token.type != RBRACKET_T:
+                return None, IllegalSyntaxError(self.curr_token.line, 
+                                                self.curr_token.col, 
+                                                RBRACKET_MISSING_ERROR)
+            
+            if self.curr_token.type == COMMA_T: self.next_token()
+        return array, None
+    
+    def slice(self):
+        """
+        
+        """
+        op = Token(SLICE_T, self.curr_token.line, self.curr_token.col)
+        if self.curr_token.type == COLON_T:
+            self.next_token()
+            if self.curr_token.type == RBRACKET_T:
+                return (None, None), op, None
+            end, error = self.arith_expr()
+            if error: return None, None, error
+            return (None, end), op, None
+        elif self.curr_token.type == RBRACKET_T:
+            return None, None, IllegalSyntaxError(self.curr_token.line, 
+                                                self.curr_token.col, 
+                                                "Index Missing")
+        else:
+            start, error = self.arith_expr()
+            print("HERE")
+            print(self.curr_token)
+            print(start)
+            if error: return None, None, error
+            if self.curr_token.type == COLON_T:
+                self.next_token()
+                if self.curr_token.type == RBRACKET_T:
+                    return (start, None), op, None
+                end, error = self.arith_expr()
+                if error: return None, None, error
+                return (start, end), op, None
+            else:
+                op = Token(AT_T, self.curr_token.line, self.curr_token.col)
+                return start, op, None
+
     def power(self):
         """
         

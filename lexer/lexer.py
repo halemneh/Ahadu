@@ -273,8 +273,20 @@ class Lexer:
             elif self.curr_char == ')':
                 tokens.append(Token(RPARAM_T, self.line, self.col))
                 self.next_char()
+            elif self.curr_char == '[':
+                tokens.append(Token(LBRACKET_T, self.line, self.col))
+                self.next_char()
+            elif self.curr_char == ']':
+                tokens.append(Token(RBRACKET_T, self.line, self.col))
+                self.next_char()
             elif self.curr_char == '^':
                 tokens.append(Token(POWER_T, self.line, self.col))
+                self.next_char()
+            elif self.curr_char == ',':
+                tokens.append(Token(COMMA_T, self.line, self.col))
+                self.next_char()
+            elif self.curr_char == ',':
+                tokens.append(Token(DOT_T, self.line, self.col))
                 self.next_char()
             elif self.curr_char == ':':
                 tokens.append(self.check_then())
