@@ -41,8 +41,15 @@ FALSE_T = 'FALSE'
 NEWLINE_T = 'NEWLINE'
 EOF_T = 'EOF'
 
+IF_T = 'IF'
+ELIF_T = 'ELIF'
+ELSE_T = 'ELSE'
+WHILE_T = 'WHILE'
 ELIF = 'ደግሞ'
 WHILE = 'ድረስ'
+THEN_T = 'THEN'
+COLON_T = 'COLON'
+ELIF_START_T = 'ELSE_START'
 
 KEYWORS = {
     'ቁጥር': INT_T, 
@@ -51,9 +58,10 @@ KEYWORS = {
     'ፊደል': 'CHAR',
     'ጽሁፍ': 'STRING',
     'ስብስብ': 'LIST',
-    'ከሆነ': 'IF',
-    'አለበለዚያ': 'ELSE',
-    'እስከሆነ': 'WHILE_1',
+    'ከሆነ': IF_T,
+    'አለበለዚያ': ELSE_T,
+    'ግን' : ELIF_START_T,
+    'እስከሆነ': WHILE_T,
     'መልስ': 'RETURN',
     'ፋንክሽን': 'FUNC',
     'ክላስ': 'CLASS',

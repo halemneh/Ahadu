@@ -116,16 +116,16 @@ class Lexer:
             self.next_char()
         
         if word in KEYWORS:
-            if KEYWORS[word] == 'IF' and self.curr_char == ' ' and (
-                self.text[self.index + 1: self.index + 4] == ELIF):
-                for _ in range(4):
-                    self.next_char()
-                return Token(KEYWORD_T, start_line, start_col, 'ELIF')
-            elif KEYWORS[word] == 'WHILE_1' and self.curr_char == ' ' and (
+            # if KEYWORS[word] == IF_T and self.curr_char == ' ' and (
+            #     self.text[self.index + 1: self.index + 4] == ELIF):
+            #     for _ in range(4):
+            #         self.next_char()
+            #     return Token(KEYWORD_T, start_line, start_col, ELIF_T)
+            if KEYWORS[word] == WHILE_T and self.curr_char == ' ' and (
                 self.text[self.index + 1: self.index + 4] == WHILE):
                 for _ in range(4):
                     self.next_char()
-                return Token(KEYWORD_T, start_line, start_col, 'WHILE')
+                return Token(KEYWORD_T, start_line, start_col, WHILE_T)
             else:
                 return Token(KEYWORD_T, start_line, start_col, KEYWORS[word])
         else:
@@ -183,6 +183,18 @@ class Lexer:
             return Token(NEQ_T, start_line, start_col)
         return Token(KEYWORD_T, NOT_T, start_line, start_col)
     
+    def check_then(self):
+        """
+        
+        """
+        start_line = self.line
+        start_col = self.col
+        self.next_char()
+        if self.curr_char == '-':
+            self.next_char()
+            return Token(THEN_T, start_line, start_col)
+        return Token(COLON_T, start_line, start_col)
+    
     def lexer(self):
         """
         Returns a list of tokens from self.text and an IllegalCharacter error
@@ -237,17 +249,14 @@ class Lexer:
             elif self.curr_char == '^':
                 tokens.append(Token(POWER_T, self.line, self.col))
                 self.next_char()
+            elif self.curr_char == ':':
+                tokens.append(self.check_then())
+            elif self.curr_char == '\u1366':
+                tokens.append(Token(THEN_T, self.line, self.col))
+                self.next_char()
             else:
                 return [], IllegalCharacterError(self.line, self.col, 
                                                  self.curr_char)
             
         tokens.append(Token(EOF_T, self.line, self.col))
         return tokens, None
-    
-                    
-
-                        
-
-
-
-

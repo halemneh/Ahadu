@@ -57,11 +57,50 @@ class StatementNode:
         self.col = expr_list[0].col
 
     def __repr__(self):
-        result = ''
-        for i in range(len(self.expr_list)):
-            result += f'({self.expr_list[i]}),\n'
+        result = '['
+        for expr in self.expr_list:
+            result += f'({expr}),\n'
 
-        return result
+        return result + ']'
+    
+class IfNode:
+    def __init__(self, cases, else_case):
+        self.cases = cases
+        self.else_case = else_case
+        self.line = self.cases[0][0].line
+        self.col = self.cases[0][0].col
+
+    def __repr__(self):
+        res = ''
+        for i in range(len(self.cases)):
+            if i == 0:
+                if isinstance(self.cases[i][1], StatementNode):
+                    res += f'(IF: {self.cases[i][0]} :- \n {self.cases[i][1]})\n'
+                else:
+                    res += f'(IF: {self.cases[i][0]} :- {self.cases[i][1]})\n'
+            else:
+                if isinstance(self.cases[i][1], StatementNode):
+                    res += f' (ELIF: {self.cases[i][0]} :- \n {self.cases[i][1]})\n'
+                else:
+                    res += f' (ELIF: {self.cases[i][0]} :- {self.cases[i][1]})\n'
+        if self.else_case != None:
+            if isinstance(self.cases[i][1], StatementNode):
+                res += f' (ELSE:- \n {self.else_case})\n'
+            else:
+                res += f' (ELSE:- {self.else_case})\n'
+        
+        return res
+
+class WhileNode:
+    def __init__(self, condition, statements):
+        self.condition = condition
+        self.statement = statements
+        self.line = self.condition.line
+        self.col = self.condition.col
+
+    def __repr__(self):
+        return f'(WHILE: {self.condition}:-\n {self.statement}\n)'
+
 # -----------------------------------------------------------------------------
 class Parser:
     def __init__(self, tokens):
@@ -96,11 +135,12 @@ class Parser:
         self.tokens
         """
         nodes, error = self.statements()
+        if error: return None, error
 
         if not error and self.curr_token.type != EOF_T:
             return None, IllegalSyntaxError(self.curr_token.line,
-                                            self.curr_token.col, 'MISSING OPS')
-        return nodes, error
+                                            self.curr_token.col, 'MISSING OPS 1')
+        return nodes, None
     
     def statements(self):
         """
@@ -129,15 +169,26 @@ class Parser:
 
         expr, error = self.experssion()
         if error: return None, error
-        statements.append((expr))
+        statements.append(expr)
 
-        while True:
+        while self.curr_token.type != EOF_T:
             line_count = 0
             while self.curr_token.type == NEWLINE_T:
                 line_count += 1
                 self.next_token()
 
             if line_count == 0: done = True
+
+            if done:
+                if self.curr_token.match(KEYWORD_T, IF_T):
+                    self.next_token()
+                    if_condition = statements.pop()
+                    if_statment, error = self.if_expr(if_condition)
+                    if error: return None, error
+                    statements.append(if_statment)
+                    done = False
+                    continue
+
             if done: break
             
             tab_count = 0
@@ -155,11 +206,10 @@ class Parser:
                                             self.curr_token.col)
             
             expr, error = self.experssion()
-            if error:
-                return None, error
+            if error: return None, error
             
             statements.append(expr)
-
+        
         return StatementNode(statements), None
     
     def binary_op(self, func_a, ops, func_b=None):
@@ -204,7 +254,17 @@ class Parser:
                 return None, IllegalSyntaxError(self.curr_token.line, 
                                                 self.curr_token.col, 
                                                 RPARAM_MISSING_ERROR)
-            
+         
+        elif token.match(KEYWORD_T, IF_T):
+            return None, IllegalSyntaxError(token.line, token.col, 
+                                            "Expected Expression before IF")
+        elif token.match(KEYWORD_T, WHILE_T):
+            return None, IllegalSyntaxError(token.line, token.col, 
+                                            "Expected Expression before WHILE")
+        elif token.match(KEYWORD_T, ELIF_START_T):
+            return None, IllegalSyntaxError(token.line, token.col, 
+                                                "IF statement required before ELIF")
+        
         return None, IllegalSyntaxError(token.line, token.col, 
                                         "MISSING OPERATIONS")
     
@@ -235,25 +295,16 @@ class Parser:
     def experssion(self):
         """
         Return a BinaryOpNode or an error
-        """
-        if self.curr_token.match(KEYWORD_T, INT_T):
-            self.next_token()
-            if self.curr_token.type != IDENTIFIER_T:
-                return None, IllegalSyntaxError(self.curr_token.line, 
-                                                self.curr_token.col, 
-                                                EXPECTED_IDENTIFIER)
-            
+        """     
+        if self.curr_token.type == IDENTIFIER_T:
             identifier = self.curr_token
             self.next_token()
-            if self.curr_token.type != EQUAL_T:
-                return None, IllegalSyntaxError(self.curr_token.line,
-                                                self.curr_token.col,
-                                                EXPECTED_EQUALS)
-            
-            self.next_token()
-            value, error = self.experssion()
-            if error: return None, error
-            return VarAssignNode(identifier, value), None
+            if self.curr_token.type == EQUAL_T:
+                self.next_token()
+                expr, error = self.experssion()
+                if error: return None, error
+                return VarAssignNode(identifier, expr), None
+            self.prev_tokens()
         return self.binary_op(self.comp_expr, ((KEYWORD_T, AND_T), (KEYWORD_T, 
                                                                     OR_T)))
 
@@ -277,4 +328,144 @@ class Parser:
         
         """
         return self.binary_op(self.term, (PLUS_T, MINUS_T))
+
+    def if_expr(self, if_condition):
+        """
+        
+        """
+        cases = []
+        else_case = None
+
+        if self.curr_token.type != THEN_T and (self.curr_token 
+                                                == NEWLINE_T):
+            return None, IllegalSyntaxError(self.curr_token.line,
+                                            self.curr_token.col, 
+                                            "Expected ':-' ")
+        if self.curr_token.type == THEN_T:
+            self.next_token()
+        
+        if self.curr_token.type == NEWLINE_T:
+            self.indent += 1
+            if_statement, error = self.statements()
+            if error: return None, error
+            cases.append((if_condition, if_statement))
+            self.indent -= 1
+
+            if self.curr_token.type == TAB_T:
+                if ((self.tokens[self.index + self.indent].match(KEYWORD_T, 
+                                                                 ELIF_START_T)) 
+                                                                 or 
+                    (self.tokens[self.index + self.indent].match(KEYWORD_T, 
+                    ELSE_T))):
+                    for _ in range(self.indent):
+                        self.next_token()
+            while self.curr_token.match(KEYWORD_T, ELIF_START_T):
+                self.next_token()
+                elif_condition, error = self.experssion()
+                if error: return None, error
+
+                #self.next_token()
+                if not self.curr_token.match(KEYWORD_T, IF_T):
+                    return None, IllegalSyntaxError(self.curr_token.line, 
+                                                    self.curr_token.col,
+                                                    "Expected Elif End")
+
+
+                self.next_token()
+                if self.curr_token.type != THEN_T and (self.curr_token 
+                                                        == NEWLINE_T):
+                    return None, IllegalSyntaxError(self.curr_token.line, 
+                                                    self.curr_token.col,
+                                                    "Expected ':-' ")
+                if self.curr_token.type == THEN_T:
+                    self.next_token()
+                if self.curr_token.type == NEWLINE_T:
+                    # self.next_token()
+                    self.indent += 1
+                    elif_statement, error = self.statements()
+                    if error: return None, error
+                    cases.append((elif_condition, elif_statement))
+                    self.indent -= 1
+
+                else:
+                    elif_statement, error = self.experssion()
+                    if error: return None, error
+                    cases.append((elif_condition, elif_statement))
+
+                if self.curr_token.type == TAB_T:
+                    if ((self.tokens[self.index + self.indent].match(
+                        KEYWORD_T, ELIF_START_T)) or 
+                        (self.tokens[self.index + self.indent].match(KEYWORD_T, 
+                                                                     ELSE_T))):
+                        for _ in range(self.indent):
+                            self.next_token()
+                
+            if self.curr_token.match(KEYWORD_T, ELSE_T):
+                self.next_token()
+                if self.curr_token.type != THEN_T and (self.curr_token 
+                                                        == NEWLINE_T):
+                    return None, IllegalSyntaxError(self.curr_token.line, 
+                                                    self.curr_token.col,
+                                                    "Expected ':-' ")
+                if self.curr_token.type == THEN_T:
+                    self.next_token()
+                if self.curr_token.type == NEWLINE_T:
+                    self.next_token()
+                    self.indent += 1
+                    else_case, error = self.statements()
+                    if error: return None, error
+                    self.indent -= 1
+
+                else:
+                    self.next_token()
+                    else_case, error = self.experssion()
+                    if error: return None, error
+        else:
+            if_expr, error = self.experssion()
+            if error: return None, error
+            cases.append((if_condition, if_expr))
+
+            while self.curr_token.match(KEYWORD_T, ELIF_START_T):
+                self.next_token()
+                elif_condition, error = self.experssion()
+                if error: return None, error
+
+                
+                if not self.curr_token.match(KEYWORD_T, IF_T):
+                    return None, IllegalSyntaxError(self.curr_token.line, 
+                                                    self.curr_token.col,
+                                                    "Expected Elif End")
+                self.next_token()
+                elif_expr, error = self.experssion()
+                if error: return None, error
+                cases.append((elif_condition, elif_expr))
+
+            if self.curr_token.match(KEYWORD_T, ELSE_T):
+                self.next_token()
+                else_case, error = self.experssion()
+                if error: return None, error
+
+        return IfNode(cases, else_case), None
+    
+    def while_expr(self, while_condition):
+        self.next_token()
+        if self.curr_token.type != THEN_T and (self.curr_token 
+                                                        == NEWLINE_T):
+            return None, IllegalSyntaxError(self.curr_token.line, 
+                                            self.curr_token.col,
+                                            "Expected ':-' ")
+        
+        if self.curr_token.type != NEWLINE_T:
+            expr, error = self.experssion()
+            if error: return None, error
+            return WhileNode(while_condition, expr)
+        self.indent += 1
+        statement, error = self.statements()
+        if error: return None, error
+        self.indent -= 1
+        return WhileNode(while_condition, statement)
+
+
+        
+        
     

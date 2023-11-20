@@ -49,7 +49,7 @@ class Interpreter:
         for expr in node.expr_list:
             value, error = self.visit(expr, context)
             if error: return None, error
-            #print(value)
+            print(value)
 
         return None, None
         
@@ -150,4 +150,20 @@ class Interpreter:
         
         return Number(value.value).set_context(context).set_position(node.line, node.col), None
         
-    
+    def visit_IfNode(self, node, context):
+        """
+        
+        """
+        for case in node.cases:
+            cond, error = self.visit(case[0], context)
+            if error: return None, error
+            
+            if cond.value != 0:
+                value, error = self.visit(case[1], context)
+                if error: return None, error
+                return value, None
+            
+        if node.else_case != None:
+            value, error = self.visit(node.else_case, context)
+            if error: return None, error
+            return value, None

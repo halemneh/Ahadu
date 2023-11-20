@@ -25,13 +25,16 @@ if error == None:
     print("##                 Parser Result                 ###")
     print("####################################################")
 
-    #pdb.set_trace()
+    pdb.set_trace()
     ast, err = Parser(tokens).parse()
 
     if err:
         print(err.msg_as_string())
     else:
         print(ast)
+        print("####################################################")
+        print("##               Interprter Result               ###")
+        print("####################################################")
 
         interpter = Interpreter()
         context = Context("ዋና ፕሮግራም")

@@ -1,4 +1,4 @@
-statement := (NEWLINE* TAB* experssion)*
+statements := NEWLINE* TAB* experssion (NEWLINE+ experssion)* NEWLINE*
 
 expression ::= KEYWORD:INT IDENTIFIER EQUAL arith_expr
              = comp_expr ((KEYWORD:AND | KEYWORD|OR) comp_expr)*
@@ -17,7 +17,9 @@ power := atom (POWER factor)*
 
 atom := INT | IDENTIFIER
       = LPRAM expression RPARAM
- 
+
+if-expr := expr KEYWORD:IF :- (expr if-a|if-b) |
+           NEWLINE statements (indet + 1)
 
 
 
