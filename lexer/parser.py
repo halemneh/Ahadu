@@ -171,7 +171,7 @@ class Parser:
         if error: return None, error
         statements.append(expr)
 
-        while self.curr_token.type != EOF_T:
+        while True:
             line_count = 0
             while self.curr_token.type == NEWLINE_T:
                 line_count += 1
@@ -187,10 +187,17 @@ class Parser:
                     if error: return None, error
                     statements.append(if_statment)
                     done = False
-                    continue
+                elif self.curr_token.match(KEYWORD_T, WHILE_T):
+                    self.next_token()
+                    while_condition = statements.pop()
+                    if_statment, error = self.while_expr(while_condition)
+                    if error: return None, error
+                    statements.append(if_statment)
+                    done = False
 
-            if done: break
-            
+            if done or self.curr_token.type == EOF_T: break
+            if self.curr_token.type == NEWLINE_T: continue
+        
             tab_count = 0
             while self.curr_token.type == TAB_T:
                 tab_count += 1
@@ -448,13 +455,14 @@ class Parser:
         return IfNode(cases, else_case), None
     
     def while_expr(self, while_condition):
-        self.next_token()
+        print("WHILE_HERE")
         if self.curr_token.type != THEN_T and (self.curr_token 
                                                         == NEWLINE_T):
             return None, IllegalSyntaxError(self.curr_token.line, 
                                             self.curr_token.col,
                                             "Expected ':-' ")
-        
+        if self.curr_token.type == THEN_T:
+            self.next_token()
         if self.curr_token.type != NEWLINE_T:
             expr, error = self.experssion()
             if error: return None, error
@@ -463,7 +471,7 @@ class Parser:
         statement, error = self.statements()
         if error: return None, error
         self.indent -= 1
-        return WhileNode(while_condition, statement)
+        return WhileNode(while_condition, statement), None
 
 
         

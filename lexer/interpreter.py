@@ -167,3 +167,21 @@ class Interpreter:
             value, error = self.visit(node.else_case, context)
             if error: return None, error
             return value, None
+        
+    def visit_WhileNode(self, node, context):
+        """
+        
+        """
+        cond, error = self.visit(node.condition, context)
+        if error: return None, error
+
+        value = None
+        while cond.value != 0:
+            value, error = self.visit(node.statement, context)
+            if error: return None, error
+
+            cond, error = self.visit(node.condition, context)
+            if error: return None, error
+        
+        return value, None
+            
