@@ -126,11 +126,11 @@ class DefaultType:
         """
         return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
     
-    def run(self):
+    def run(self, args):
         """
         Returns an error since the defaultType doen't allow execution.
         """
-        return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
+        return None, RTError(args.line, args.col, "Illegal Operation" , self.context)
     
     def true(self):
         """
@@ -323,7 +323,6 @@ class String(DefaultType):
         an error if x is not a String object.
         """
         if isinstance(x, String):
-            
             return String(self.value + x.value).set_context(
                 self.context), None
         else:
@@ -367,6 +366,16 @@ class String(DefaultType):
             return None, RTError(end.line, end.col, "Illegal Operation2" , self.context)
         else:
             return String(self.value[start.value: end.value]), None
+        
+    def eq(self, x):
+        """
+        
+        """
+        if isinstance(x, String):
+            return String(int(self.value == x.value)).set_context(
+                self.context), None
+        else:
+            return None, RTError(x.line, x.col, "Illegal Operation" , self.context)
 
         
 ###############################################################################
@@ -428,8 +437,15 @@ class Array(DefaultType):
         if not start: start = Number(0)
         if not end: end = Number(len(self.value))
         if not isinstance(start, Number):
-            return None, RTError(start.line, start.col, "Illegal Operation" , self.context)
+            return None, RTError(start.line, start.col, "Illegal Operation", self.context)
         elif not isinstance(end, Number):
             return None, RTError(end.line, end.col, "Illegal Operation" , self.context)
         else:
             return Array(self.value[start.value: end.value]), None
+
+###############################################################################
+###############################################################################
+
+
+    
+        

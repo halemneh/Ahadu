@@ -23,5 +23,7 @@ array := LBRACKET (atom)* RBRACKET
 if-expr := expr KEYWORD:IF :- (expr if-a|if-b) |
            NEWLINE statements (indet + 1)
 
+function-expr := KEYWORD:FUNC IDENTIFIER LPRAM (IDENTIFIER (COMMA IDENTIFIER)*)* RPARAM THEN
+                (expression | NEWLINE statements)
 
-
+function-call := 

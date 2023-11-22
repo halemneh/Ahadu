@@ -39,7 +39,7 @@ class VarAssignNode:
         self.col = identifier.col
 
     def __repr__(self):
-        return f'({self.name.value} = {self.value})'
+        return f'(V{self.name.value} = {self.value})'
 
 class VarAccessNode:
     def __init__(self, identifier):
@@ -116,6 +116,29 @@ class ArrayNode:
         self.line = line
         self.col = col
 
+    # def __repr__(self):
+    #     return self.array
+
+class FunctionDefNode:
+    def __init__(self, name, args, body):
+        self.name = name
+        self.args = args
+        self.body = body
+        self.line = self.name.line
+        self.col = self.name.col
+
+    def __repr__(self):
+        return f'[{self.name.value} ({self.args}):\n ({self.body})]'
+    
+class ReturnNode:
+    def __init__(self, expr):
+        self.expr = expr
+        self.line = self.expr.line
+        self.col = self.expr.line
+
+    def __repr__(self):
+        return f'Return: {self.expr}'
+
 # -----------------------------------------------------------------------------
 class Parser:
     def __init__(self, tokens):
@@ -151,7 +174,7 @@ class Parser:
         """
         nodes, error = self.statements()
         if error: return None, error
-
+        print(self.curr_token)
         if not error and self.curr_token.type != EOF_T:
             return None, IllegalSyntaxError(self.curr_token.line,
                                             self.curr_token.col, 'MISSING OPS 1')
@@ -185,6 +208,8 @@ class Parser:
         expr, error = self.experssion()
         if error: return None, error
         statements.append(expr)
+        if isinstance(expr, ReturnNode):
+            return StatementNode(statements), None
 
         while True:
             line_count = 0
@@ -209,6 +234,8 @@ class Parser:
                     if error: return None, error
                     statements.append(if_statment)
                     done = False
+                elif isinstance(expr, FunctionDefNode):
+                    done = False
 
             if done or self.curr_token.type == EOF_T: break
             if self.curr_token.type == NEWLINE_T: continue
@@ -229,9 +256,9 @@ class Parser:
             
             expr, error = self.experssion()
             if error: return None, error
-            
             statements.append(expr)
-        
+            if isinstance(expr, ReturnNode): 
+                return StatementNode(statements), None
         return StatementNode(statements), None
     
     def binary_op(self, func_a, ops, func_b=None):
@@ -271,11 +298,28 @@ class Parser:
                 if self.curr_token.type == RBRACKET_T:
                     self.next_token()
                     return BinaryOpNode(VarAccessNode(token), op, index), None
-                print(self.curr_token)
+                return None, IllegalSyntaxError(self.curr_token.line, 
+                                                self.curr_token.col, 
+                                                RBRACKET_MISSING_ERROR)
+            if self.curr_token.type == LPARAM_T:
+                self.next_token()
+                args, error = self.array(True)
+                if error: return None, error
+                if self.curr_token.type == RPARAM_T:
+                    self.next_token()
+                    return BinaryOpNode(VarAccessNode(token), 
+                                        Token(CALL_T, token.line, token.col), 
+                                        args), None
                 return None, IllegalSyntaxError(self.curr_token.line, 
                                                 self.curr_token.col, 
                                                 RBRACKET_MISSING_ERROR)
             return VarAccessNode(token), None
+        elif token.match(KEYWORD_T, FUNC_T):
+            self.next_token()
+            func, error = self.function_definition()
+            if error: return None, error
+            return func, None
+
         elif token.type == LPARAM_T:
             self.next_token()
             experssion, error = self.experssion()
@@ -283,7 +327,6 @@ class Parser:
             if self.curr_token.type == RPARAM_T:
                 self.next_token()
                 return experssion, None
-            print(2)
             return None, IllegalSyntaxError(self.curr_token.line, 
                                                 self.curr_token.col, 
                                                 RPARAM_MISSING_ERROR)
@@ -314,17 +357,19 @@ class Parser:
         return None, IllegalSyntaxError(token.line, token.col, 
                                         "MISSING OPERATIONS")
     
-    def array(self):
+    def array(self, PARAN = False):
         """
         Parses an array and returns a list of the array elements.
         """
         array = []
-        while self.curr_token.type != RBRACKET_T:
-            elem, error = self.atom()
+        boundary = RPARAM_T if PARAN else RBRACKET_T
+        while self.curr_token.type != boundary:
+            elem, error = self.experssion()
             if error: return None, error
             array.append(elem)
 
-            if self.curr_token.type != COMMA_T and self.curr_token.type != RBRACKET_T:
+            if self.curr_token.type != COMMA_T and (
+                self.curr_token.type != boundary):
                 return None, IllegalSyntaxError(self.curr_token.line, 
                                                 self.curr_token.col, 
                                                 RBRACKET_MISSING_ERROR)
@@ -350,9 +395,6 @@ class Parser:
                                                 "Index Missing")
         else:
             start, error = self.arith_expr()
-            print("HERE")
-            print(self.curr_token)
-            print(start)
             if error: return None, None, error
             if self.curr_token.type == COLON_T:
                 self.next_token()
@@ -402,6 +444,13 @@ class Parser:
                 if error: return None, error
                 return VarAssignNode(identifier, expr), None
             self.prev_tokens()
+        elif self.curr_token.match(KEYWORD_T, RETURN_T):
+            self.next_token()
+            return_expr = None
+            if self.curr_token.type != NEWLINE_T:
+                return_expr, error = self.experssion()
+                if error: return None, error
+            return ReturnNode(return_expr), None
         return self.binary_op(self.comp_expr, ((KEYWORD_T, AND_T), (KEYWORD_T, 
                                                                     OR_T)))
 
@@ -545,7 +594,9 @@ class Parser:
         return IfNode(cases, else_case), None
     
     def while_expr(self, while_condition):
-        print("WHILE_HERE")
+        """
+        
+        """
         if self.curr_token.type != THEN_T and (self.curr_token 
                                                         == NEWLINE_T):
             return None, IllegalSyntaxError(self.curr_token.line, 
@@ -563,7 +614,71 @@ class Parser:
         self.indent -= 1
         return WhileNode(while_condition, statement), None
 
-
+    def function_definition(self):
+        """
         
+        """
+        if self.curr_token.type != IDENTIFIER_T:
+            return None, IllegalSyntaxError(self.curr_token.line,
+                                            self.curr_token.col,
+                                            "Function name not specified")
+        
+        func_name = self.curr_token
+        self.next_token()
+        if self.curr_token.type != LPARAM_T:
+            return None, IllegalSyntaxError(self.curr_token.line,
+                                            self.curr_token.col,
+                                            "Left PARAM missing")
+        
+        self.next_token()
+        args = []
+        while True:
+            if self.curr_token.type == RPARAM_T:
+                self.next_token()
+                break
+
+            if self.curr_token.type != IDENTIFIER_T:
+                return None, IllegalSyntaxError(self.curr_token.line,
+                                                self.curr_token.col,
+                                                "Args not specified correctly")
+            
+            args.append(self.curr_token)
+            self.next_token()
+
+            if self.curr_token.type != COMMA_T and (
+                self.curr_token.type != RPARAM_T):
+                return None, IllegalSyntaxError(self.curr_token.line,
+                                                self.curr_token.col,
+                                                "Comma expected")
+            if self.curr_token.type == COMMA_T:
+                self.next_token()
+        
+        if self.curr_token.type == NEWLINE_T:
+            return None, IllegalSyntaxError(self.curr_token.line,
+                                                self.curr_token.col,
+                                                "Expected :-")
+        
+        if self.curr_token.type == THEN_T:
+            self.next_token()
+
+        if self.curr_token.type == NEWLINE_T:
+            self.next_token()
+            self.indent += 1
+            body, error = self.statements()
+            if error: return None, error
+            self.indent -= 1
+
+            return FunctionDefNode(func_name, args, body), None
+        
+        body, error = self.experssion()
+        if error: return None, error
+
+        # if self.curr_token.type != NEWLINE_T:
+        #     return None, IllegalSyntaxError(self.curr_token.line, 
+        #                                     self.curr_token.col,
+        #                                     "Invalid inline Function definition")
+
+        return FunctionDefNode(func_name, args, body), None
+            
         
     

@@ -1,6 +1,10 @@
 from type import *
+from function import *
 from constants import *
 from error import *
+from parser import ReturnNode, StatementNode
+
+import copy
 
 class Context:
     def __init__(self, name, parent = None, parent_line = None):
@@ -10,8 +14,8 @@ class Context:
         self.symbol_table = None
 
 class SymbolTable:
-    def __init__(self):
-        self.parent = None
+    def __init__(self, parent):
+        self.parent = parent
         self.symbols = {}
 
     def get(self, identifier):
@@ -45,12 +49,12 @@ class Interpreter:
         """
         
         """
+        value = None
         for expr in node.expr_list:
             value, error = self.visit(expr, context)
             if error: return None, error
-            print(value)
 
-        return None, None
+        return value, None
         
     
     def visit_NumberNode(self, node, context):
@@ -67,7 +71,7 @@ class Interpreter:
         """
         left, error = self.visit(node.left_node, context)
         if error: return None, error
-        if node.op_token.type != SLICE_T:
+        if node.op_token.type not in (SLICE_T, CALL_T):
             right, error = self.visit(node.right_node, context)
             if error: return None, error
         
@@ -75,7 +79,6 @@ class Interpreter:
         result = None
 
         if node.op_token.type == PLUS_T:
-            print(right)
             result, error = left.add(right)
         elif node.op_token.type == MINUS_T:
             result, error = left.subtract(right)
@@ -114,12 +117,34 @@ class Interpreter:
                 end, error = self.visit(right[1], context)
                 if error: return None, error
             result, error = left.slice(start, end)
+        elif node.op_token.type == CALL_T:
+            args = []
+            for arg in node.right_node:
+                value, error = self.visit(arg, context)
+                if error: return None, error
+                args.append(value)
+            result, error = self.call(copy.deepcopy(left), args, context)
+            if error: return None, error
+            return result, None
         
-
         if error:
             return None, error
         else:
-            return result.set_position(node.line, node.col), None
+            return result.set_position(node.line, node.col).set_context(
+                context), None
+        
+    def call(self, function, args, context):
+        """
+        
+        """
+        interpreter = Interpreter()
+        func_context = Context(function.name, context, function.line)
+        func_context.symbol_table = SymbolTable(context.symbol_table)
+        
+        result, error = function.run(args, interpreter, func_context)
+        if error: return None, error
+        if function.should_return: result = copy.deepcopy(result)
+        return result, None
         
     def visit_UnaryOpNode(self, node, context):
         """
@@ -148,6 +173,9 @@ class Interpreter:
         value, error = self.visit(node.value, context)
         if error: return None, error
 
+        if value == None:
+            return None, RTError(node.line, node.col, 
+                                 "Var can't be equal to NoneType", context)
         context.symbol_table.set(identifier, value)
         return value, None
     
@@ -161,8 +189,8 @@ class Interpreter:
         if not value:
             return None, RTError(node.line, node.col, UNDEFINED_IDENTIFIER, 
                                  context, identifier)
-        
-        return value.copy().set_context(context).set_position(
+ 
+        return copy.deepcopy(value).set_context(context).set_position(
             node.line, node.col), None
         
     def visit_IfNode(self, node, context):
@@ -182,6 +210,8 @@ class Interpreter:
             value, error = self.visit(node.else_case, context)
             if error: return None, error
             return value, None
+        
+        return None, None
         
     def visit_WhileNode(self, node, context):
         """
@@ -218,4 +248,27 @@ class Interpreter:
             elements.append(elem)
         return Array(elements).set_position(
             node.line, node.col).set_context(context), None
-            
+    
+    def visit_FunctionDefNode(self, node, context):
+        """
+        
+        """
+        should_rtn  = False
+        if isinstance(node.body, StatementNode):
+            should_rtn = isinstance(node.body.expr_list[-1], ReturnNode)
+        else:
+            should_rtn = isinstance(node.body, ReturnNode)
+        
+        func = Function(node.name.value, node.args, node.body, should_rtn
+                        ).set_context(context).set_position(node.line, node.col)
+        context.symbol_table.set(node.name.value, func)
+        return func, None
+    
+    def visit_ReturnNode(self, node, context):
+        """
+        
+        """
+        return_value, error = self.visit(node.expr, context)
+        if error: return None, error
+        return return_value.set_context(context).set_position(
+            node.line, node.col), None    

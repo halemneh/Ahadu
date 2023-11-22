@@ -39,6 +39,7 @@ NOT_T = 'NOT'
 OR_T = 'OR'
 AT_T = 'AT'
 SLICE_T = 'SLICE'
+CALL_T = 'CALL'
 
 TRUE_T = 'TRUE'
 FALSE_T = 'FALSE'
@@ -55,6 +56,8 @@ WHILE = 'ድረስ'
 THEN_T = 'THEN'
 COLON_T = 'COLON'
 ELIF_START_T = 'ELSE_START'
+FUNC_T = 'FUNC'
+RETURN_T = 'RETURN'
 
 KEYWORS = {
     'ቁጥር': INT_T, 
@@ -67,8 +70,8 @@ KEYWORS = {
     'አለበለዚያ': ELSE_T,
     'ግን' : ELIF_START_T,
     'እስከሆነ': WHILE_T,
-    'መልስ': 'RETURN',
-    'ፋንክሽን': 'FUNC',
+    'መልስ': RETURN_T,
+    'ፋንክሽን': FUNC_T,
     'ክላስ': 'CLASS',
     'ወይም': OR_T,
     'እና': AND_T,

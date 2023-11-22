@@ -2,12 +2,12 @@ from lexer import Lexer
 from parser import Parser
 from interpreter import *
 
-#import pdb
+import pdb
 
 with open("sample.txt") as file:
     text = file.read()
 
-global_symbol_table = SymbolTable()
+global_symbol_table = SymbolTable(None)
 
 
 tokens, error = Lexer(text).lexer()
@@ -25,7 +25,7 @@ if error == None:
     print("##                 Parser Result                 ###")
     print("####################################################")
 
-    #pdb.set_trace()
+   
     ast, err = Parser(tokens).parse()
 
     if err:
@@ -40,6 +40,7 @@ if error == None:
         context = Context("ዋና ፕሮግራም")
         context.symbol_table = global_symbol_table
         
+        #pdb.set_trace()
         rt, err = interpter.visit(ast, context)
         print(global_symbol_table.symbols)
         if err:
