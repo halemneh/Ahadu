@@ -1,143 +1,6 @@
 from lexer import *
 from error import *
-
-class NumberNode:
-    def __init__(self, token):
-        self.token = token
-        self.line = token.line
-        self.col = token.col
-
-    def __repr__(self):
-        return f'{self.token}'
-    
-class BinaryOpNode:
-    def __init__(self, left_node, op_token, right_node):
-        self.left_node = left_node
-        self.right_node = right_node
-        self.op_token = op_token
-        self.line = left_node.line
-        self.col = left_node.col
-
-    def __repr__(self):
-        return f'({self.left_node}, {self.op_token}, {self.right_node})'
-
-class UnaryOpNode:
-    def __init__(self, op_token, node):
-        self.op_token = op_token
-        self.node = node
-        self.line = op_token.line
-        self.col = op_token.col
-
-    def __repr__(self):
-        return f'({self.op_token}, {self.node})'
-    
-class VarAssignNode:
-    def __init__(self, identifier, value):
-        self.name = identifier
-        self.value = value
-        self.line = identifier.line
-        self.col = identifier.col
-
-    def __repr__(self):
-        return f'(V{self.name.value} = {self.value})'
-
-class VarAccessNode:
-    def __init__(self, identifier):
-        self.name = identifier
-        self.line = identifier.line
-        self.col = identifier.col
-
-    def __repr__(self):
-        return f'({self.name.value})'
-    
-class StatementNode:
-    def __init__(self, expr_list):
-        self.expr_list = expr_list
-        self.line = expr_list[0].line
-        self.col = expr_list[0].col
-
-    def __repr__(self):
-        result = '['
-        for expr in self.expr_list:
-            result += f'({expr}),\n'
-
-        return result + ']'
-    
-class IfNode:
-    def __init__(self, cases, else_case):
-        self.cases = cases
-        self.else_case = else_case
-        self.line = self.cases[0][0].line
-        self.col = self.cases[0][0].col
-
-    def __repr__(self):
-        res = ''
-        for i in range(len(self.cases)):
-            if i == 0:
-                if isinstance(self.cases[i][1], StatementNode):
-                    res += f'(IF: {self.cases[i][0]} :- \n {self.cases[i][1]})\n'
-                else:
-                    res += f'(IF: {self.cases[i][0]} :- {self.cases[i][1]})\n'
-            else:
-                if isinstance(self.cases[i][1], StatementNode):
-                    res += f' (ELIF: {self.cases[i][0]} :- \n {self.cases[i][1]})\n'
-                else:
-                    res += f' (ELIF: {self.cases[i][0]} :- {self.cases[i][1]})\n'
-        if self.else_case != None:
-            if isinstance(self.cases[i][1], StatementNode):
-                res += f' (ELSE:- \n {self.else_case})\n'
-            else:
-                res += f' (ELSE:- {self.else_case})\n'
-        
-        return res
-
-class WhileNode:
-    def __init__(self, condition, statements):
-        self.condition = condition
-        self.statement = statements
-        self.line = self.condition.line
-        self.col = self.condition.col
-
-    def __repr__(self):
-        return f'(WHILE: {self.condition}:-\n {self.statement}\n)'
-    
-class StringNode:
-    def __init__(self, string):
-        self.string = string
-        self.line = self.string.line
-        self.col = self.string.col
-
-    def __repr__(self):
-        return f'"{self.string.value}"'
-    
-class ArrayNode:
-    def __init__(self, array, line, col):
-        self.array = array
-        self.line = line
-        self.col = col
-
-    # def __repr__(self):
-    #     return self.array
-
-class FunctionDefNode:
-    def __init__(self, name, args, body):
-        self.name = name
-        self.args = args
-        self.body = body
-        self.line = self.name.line
-        self.col = self.name.col
-
-    def __repr__(self):
-        return f'[{self.name.value} ({self.args}):\n ({self.body})]'
-    
-class ReturnNode:
-    def __init__(self, expr):
-        self.expr = expr
-        self.line = self.expr.line
-        self.col = self.expr.line
-
-    def __repr__(self):
-        return f'Return: {self.expr}'
+from nodes import *
 
 # -----------------------------------------------------------------------------
 class Parser:
@@ -185,8 +48,7 @@ class Parser:
         
         """
         statements = []
-        # start_line = self.curr_token.line
-        # start_col = self.curr_token.col
+        expr = None
         done = False
 
         while self.curr_token.type == NEWLINE_T:
@@ -205,11 +67,17 @@ class Parser:
             return None, IndentationError(self.curr_token.line, 
                                           self.curr_token.col)
 
-        expr, error = self.experssion()
-        if error: return None, error
-        statements.append(expr)
-        if isinstance(expr, ReturnNode):
-            return StatementNode(statements), None
+        if self.curr_token.match(KEYWORD_T, CLASS_T):
+            self.next_token()
+            obj, error = self.class_definition()
+            if error: return None, error
+            statements.append(obj)
+        else:
+            expr, error = self.experssion()
+            if error: return None, error
+            statements.append(expr)
+            if isinstance(expr, ReturnNode):
+                return StatementNode(statements), None
 
         while True:
             line_count = 0
@@ -253,12 +121,17 @@ class Parser:
             elif tab_count > self.indent:
                 return None, IndentationError(self.curr_token.line, 
                                             self.curr_token.col)
-            
-            expr, error = self.experssion()
-            if error: return None, error
-            statements.append(expr)
-            if isinstance(expr, ReturnNode): 
-                return StatementNode(statements), None
+            if self.curr_token.match(KEYWORD_T, CLASS_T):
+                self.next_token()
+                obj, error = self.class_definition()
+                if error: return None, error
+                statements.append(obj)
+            else:
+                expr, error = self.experssion()
+                if error: return None, error
+                statements.append(expr)
+                if isinstance(expr, ReturnNode): 
+                    return StatementNode(statements), None
         return StatementNode(statements), None
     
     def binary_op(self, func_a, ops, func_b=None):
@@ -301,7 +174,7 @@ class Parser:
                 return None, IllegalSyntaxError(self.curr_token.line, 
                                                 self.curr_token.col, 
                                                 RBRACKET_MISSING_ERROR)
-            if self.curr_token.type == LPARAM_T:
+            elif self.curr_token.type == LPARAM_T:
                 self.next_token()
                 args, error = self.array(True)
                 if error: return None, error
@@ -313,6 +186,28 @@ class Parser:
                 return None, IllegalSyntaxError(self.curr_token.line, 
                                                 self.curr_token.col, 
                                                 RBRACKET_MISSING_ERROR)
+            elif self.curr_token.type == DOT_T:
+                op_token = self.curr_token
+                self.next_token()
+                if self.curr_token.type != IDENTIFIER_T:
+                    return None, IllegalSyntaxError(self.curr_token.line,
+                                                    self.curr_token.col,
+                                                    "Expected a method or attribute")
+                callee = self.curr_token
+                self.next_token()
+                if self.curr_token.type == LPARAM_T:
+                    self.next_token()
+                    args, error = self.array(True)
+                    if error: return None, error
+                    if self.curr_token.type == RPARAM_T:
+                        self.next_token()
+                        return BinaryOpNode(VarAccessNode(token), op_token, 
+                                            (VarAccessNode(callee), args)), None
+                    return None, IllegalSyntaxError(self.curr_token.line, 
+                                                    self.curr_token.col, 
+                                                    RPARAM_MISSING_ERROR)
+                return BinaryOpNode(VarAccessNode(token), op_token, 
+                                    (VarAccessNode(callee), None)), None
             return VarAccessNode(token), None
         elif token.match(KEYWORD_T, FUNC_T):
             self.next_token()
@@ -438,10 +333,26 @@ class Parser:
         if self.curr_token.type == IDENTIFIER_T:
             identifier = self.curr_token
             self.next_token()
+            if self.curr_token.type == DOT_T:
+                self.prev_tokens()
+                call, error = self.atom()
+                print(call)
+                if error: return None, error
+
+                if self.curr_token.type == EQUAL_T:
+                    self.next_token()
+                    expr, error = self.experssion()
+                    if error: return None, error
+                    if isinstance(call, BinaryOpNode):
+                        return VarAssignNode(call, expr), None
+                    return VarAssignNode(identifier, expr), None
+                return call, None
             if self.curr_token.type == EQUAL_T:
                 self.next_token()
                 expr, error = self.experssion()
                 if error: return None, error
+                # if isinstance(identifier, BinaryOpNode):
+                #     return VarAssignNode((VarAccessNode(identifier), call), expr), None
                 return VarAssignNode(identifier, expr), None
             self.prev_tokens()
         elif self.curr_token.match(KEYWORD_T, RETURN_T):
@@ -679,6 +590,102 @@ class Parser:
         #                                     "Invalid inline Function definition")
 
         return FunctionDefNode(func_name, args, body), None
+    
+    def class_definition(self):
+        """
+        
+        """
+        init = None
+        parent = None
+        attributes = []
+        methods = []
+        if self.curr_token.type != IDENTIFIER_T:
+            return None, IllegalSyntaxError(self.curr_token.line, 
+                                            self.curr_token.col,
+                                            "Class Name expected!")
+        
+        class_name = self.curr_token
+        self.next_token()
+
+        """ Inheritence """
+        if self.curr_token.type == LPARAM_T:
+            self.next_token()
+            if self.curr_token.type != IDENTIFIER_T:
+                return None, IllegalSyntaxError(self.curr_token.line, 
+                                                self.curr_token.col,
+                                                "Class Parent Name expected!")
+            parent = self.curr_token
+            self.next_token()
+            if self.curr_token.type != RPARAM_T:
+                return None, IllegalSyntaxError(self.curr_token.line, 
+                                                self.curr_token.col,
+                                                RPARAM_MISSING_ERROR)
+            self.next_token()
+
+        if self.curr_token.type != THEN_T:
+            return None, IllegalSyntaxError(self.curr_token.line, 
+                                            self.curr_token.col,
+                                            ":- Expected")
+        self.next_token()
+        if self.curr_token.type != NEWLINE_T:
+            return None, IllegalSyntaxError(self.curr_token.line, 
+                                            self.curr_token.col,
+                                            "Class definition in new line")
+        
+        self.next_token()
+        self.indent += 1
+        while True:
+            tab_count = 0
+            while self.curr_token.type == TAB_T:
+                tab_count += 1
+                self.next_token()
+            if tab_count < self.indent and self.curr_token.type != NEWLINE_T:
+                for _ in range(tab_count):
+                    self.prev_tokens()
+                self.indent -= 1
+                if self.curr_token.type != EOF_T: self.prev_tokens()
+                break
+            elif tab_count > self.indent:
+                return None, IndentationError(self.curr_token.line, 
+                                            self.curr_token.col)
+
+            if self.curr_token.type == NEWLINE_T:
+                self.next_token()
+                continue
+
+            if self.curr_token.match(KEYWORD_T, FUNC_T):
+                self.next_token()
+                func, error = self.function_definition()
+                if error: return None, error
+                methods.append(func)
+
+            elif self.curr_token.match(KEYWORD_T, INIT_T):
+                init, error = self.function_definition()
+                if error: return None, error
+
+
+            elif self.curr_token.type == IDENTIFIER_T:
+                identifier = self.curr_token
+                self.next_token()
+                if self.curr_token.type != EQUAL_T:
+                    return None, IllegalSyntaxError(self.curr_token.line, 
+                                            self.curr_token.col,
+                                            "Equal Sign expected")
+                self.next_token()
+                expr, error = self.experssion()
+                if error: return None, error
+                attributes.append(VarAssignNode(identifier, expr))
+            else:
+                return None, IllegalSyntaxError(self.curr_token.line, 
+                                                self.curr_token.col,
+                                                "Not a var or a method")
+        return ClassDefNode(class_name, parent, init, attributes, methods), None
+
+
+            
+        
+        
+
             
         
     

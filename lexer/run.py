@@ -25,7 +25,7 @@ if error == None:
     print("##                 Parser Result                 ###")
     print("####################################################")
 
-   
+    #pdb.set_trace()
     ast, err = Parser(tokens).parse()
 
     if err:
@@ -40,7 +40,7 @@ if error == None:
         context = Context("ዋና ፕሮግራም")
         context.symbol_table = global_symbol_table
         
-        #pdb.set_trace()
+        
         rt, err = interpter.visit(ast, context)
         print(global_symbol_table.symbols)
         if err:

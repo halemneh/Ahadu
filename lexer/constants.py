@@ -58,6 +58,8 @@ COLON_T = 'COLON'
 ELIF_START_T = 'ELSE_START'
 FUNC_T = 'FUNC'
 RETURN_T = 'RETURN'
+INIT_T = 'INIT'
+CLASS_T = 'CLASS'
 
 KEYWORS = {
     'ቁጥር': INT_T, 
@@ -72,12 +74,12 @@ KEYWORS = {
     'እስከሆነ': WHILE_T,
     'መልስ': RETURN_T,
     'ፋንክሽን': FUNC_T,
-    'ክላስ': 'CLASS',
+    'ክላስ': CLASS_T,
     'ወይም': OR_T,
     'እና': AND_T,
     'ተቃርኖ': NOT_T,
     'አዲስ': 'NEW',
-    'ፍጠር' : 'INIT',
+    'ፍጠር' : INIT_T,
     'እውነት' : TRUE_T,
     'ሀሰት' : FALSE_T
 }

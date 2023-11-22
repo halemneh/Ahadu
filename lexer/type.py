@@ -126,7 +126,13 @@ class DefaultType:
         """
         return None, RTError(self.line, self.col, "Illegal Operation" , self.context)
     
-    def run(self, args):
+    def run(self, args, interpreter, func_context, line, col):
+        """
+        Returns an error since the defaultType doen't allow execution.
+        """
+        return None, RTError(args.line, args.col, "Illegal Operation" , self.context)
+    
+    def dot(self, args):
         """
         Returns an error since the defaultType doen't allow execution.
         """
@@ -446,6 +452,120 @@ class Array(DefaultType):
 ###############################################################################
 ###############################################################################
 
+class DefaultFunction(DefaultType):
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
 
-    
+    def __repr__(self):
+        return f'[Function: <{self.name}>]'
+
+    def check_args(self, args_from_def, args_from_call, func_context, line, col):
+        """
         
+        """
+        if len(args_from_call) < len(args_from_def):
+            return RTError(line, col, "Too few args", self.context)
+        elif len(args_from_call) > len(args_from_def):
+            return RTError(line, col, "Too many args", self.context)
+        
+        for i in range(len(args_from_call)):
+            func_context.symbol_table.set(args_from_def[i].value, (
+                args_from_call[i].set_context(func_context)))
+            
+        return None
+    
+
+###############################################################################
+###############################################################################
+
+class Function(DefaultFunction):
+    def __init__(self, name, args, body, return_present):
+        super().__init__(name)
+        self.args = args
+        self.body = body
+        self.should_return = return_present   
+
+    def run(self, args, interpreter, func_context, line, col):
+        """
+        
+        """
+        error = self.check_args(self.args, args, func_context, line, col)
+        if error: return None, error
+
+        value, error = interpreter.visit(self.body, func_context)
+        if error: return None, error
+
+        print(f'Body = {value}')
+        if not self.should_return:
+            value = None
+
+        print(f'Value = {value}')
+        return value, None
+    
+###############################################################################
+###############################################################################
+
+class Class(DefaultType):
+    def __init__(self, name, parent, init, attributes, methods, class_context):
+        super().__init__()
+        self.name = name
+        self.parent = parent
+        self.init = init
+        self.class_context = class_context
+
+        for attribute, value in attributes.items():
+            self.class_context.symbol_table.set(attribute, value)
+
+        for method, value in methods.items():
+            self.class_context.symbol_table.set(method, value)
+
+        if self.parent: self.class_context.parent = parent.class_context
+
+    def __repr__(self):
+        return f'[Class: <{self.name}>]'
+    
+    def start(self, args, interpreter, init_context, line, col):
+        """
+        
+        """
+        obj_context = copy.deepcopy(self.class_context)
+        init_context.parent = obj_context
+        if self.init == None: return obj_context, None
+        _, error = self.init.run(args, interpreter, init_context, line, col)
+        if error: return None, error
+
+        return obj_context, None
+    
+
+class Object(DefaultType):
+    def __init__(self, class_):
+        super().__init__()
+        self.class_ = class_
+        self.obj_context = None
+        self.name = None
+    
+    def start(self, args, init_context, interpreter, line, col):
+        ctx, error = self.class_.start(args, interpreter, init_context, line, col)
+        if error: return error
+        self.obj_context = ctx
+        return None
+
+    def set_name(self, name):
+        self.name = name
+        self.obj_context.name = self.name
+        
+
+    def __repr__(self):
+        return f'[Object: <{self.name}> of type {self.class_.name}]'
+    
+    
+    # def method_call(self, method_name, args, interpreter, method_context, line, col):
+    #     method_context.parent = self.obj_context
+    #     method = self.obj_context.get(method_name)
+    #     if method == None:
+    #         return None, RTError(line, col, "Method is not defined", self.obj_context)
+        
+    #     value, error = method.run(args, interpreter, method_context, line, col)
+    #     if error: return None, error
+    #     return value, None 

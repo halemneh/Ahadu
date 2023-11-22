@@ -1,8 +1,7 @@
 from type import *
-from function import *
 from constants import *
 from error import *
-from parser import ReturnNode, StatementNode
+from parser import ReturnNode, StatementNode, BinaryOpNode
 
 import copy
 
@@ -29,6 +28,8 @@ class SymbolTable:
 
     def remove(self, identifier):
         return self.symbols[identifier]
+    
+
 
 class Interpreter:
     def visit(self, node, context):
@@ -53,7 +54,7 @@ class Interpreter:
         for expr in node.expr_list:
             value, error = self.visit(expr, context)
             if error: return None, error
-
+            print(value)
         return value, None
         
     
@@ -71,7 +72,7 @@ class Interpreter:
         """
         left, error = self.visit(node.left_node, context)
         if error: return None, error
-        if node.op_token.type not in (SLICE_T, CALL_T):
+        if node.op_token.type not in (SLICE_T, CALL_T, DOT_T):
             right, error = self.visit(node.right_node, context)
             if error: return None, error
         
@@ -123,27 +124,66 @@ class Interpreter:
                 value, error = self.visit(arg, context)
                 if error: return None, error
                 args.append(value)
-            result, error = self.call(copy.deepcopy(left), args, context)
+
+            if isinstance(left, Class):
+                object = Object(left).set_context(context).set_position(
+                    node.op_token.line, node.op_token.col)
+                result, error = self.object_init(object, args)
+                if error: return None, error
+            else:
+                result, error = self.call(copy.deepcopy(left), args, context, 
+                                          node.op_token.line, node.op_token.col)
             if error: return None, error
             return result, None
-        
+        elif node.op_token.type == DOT_T:
+            if not isinstance(left, Object):
+                return None, RTError(node.line, node.col, "Invalid Operation!!", context)
+            (callee, args) = node.right_node
+            if args == None:
+                result, error = self.visit(callee, left.obj_context)
+                if error: return None, error
+            else:
+                function, error = self.visit(callee, left.obj_context)
+                if error: return None, error
+                args_ = []
+                for arg in args:
+                    value, error = self.visit(arg, context)
+                    if error: return None, error
+                    args_.append(value)
+                result, error = self.call(function, args_, left.obj_context, 
+                                          node.op_token.line, node.op_token.col)
+
         if error:
             return None, error
         else:
             return result.set_position(node.line, node.col).set_context(
                 context), None
         
-    def call(self, function, args, context):
+    def object_init(self, object, args):
         """
         
         """
         interpreter = Interpreter()
-        func_context = Context(function.name, context, function.line)
+        # TODO: change name to Amharic
+        init_context = Context("init")
+        init_context.symbol_table = SymbolTable(None)
+        error =  object.start(args, init_context, interpreter, object.line, 
+                             object.col)
+        if error: return None, error
+        return object, None
+        
+    def call(self, func, args, context, line, col):
+        """
+        
+        """
+        print(args)
+        interpreter = Interpreter()
+        func_context = Context(func.name, context, func.line)
         func_context.symbol_table = SymbolTable(context.symbol_table)
         
-        result, error = function.run(args, interpreter, func_context)
+        result, error = func.run(args, interpreter, func_context, line, col)
         if error: return None, error
-        if function.should_return: result = copy.deepcopy(result)
+        if func.should_return: result = copy.deepcopy(result)
         return result, None
         
     def visit_UnaryOpNode(self, node, context):
@@ -169,14 +209,38 @@ class Interpreter:
         """
         
         """
-        identifier = node.name.value
+        obj_context = context
+        identifier = None
+        if isinstance(node.name, BinaryOpNode):
+            if node.name.op_token.type != DOT_T:
+                return None, RTError(node.line, node.col, "Invalid OPs", context)
+            obj, error = self.visit(node.name.left_node, context)
+            if error: return None, error
+            if not isinstance(obj, Object):
+                return None, RTError(node.line, node.col, "Invalid OPers", context)
+            obj_context = obj.obj_context
+            (identifier, args) = node.name.right_node
+            if args != None: 
+                return None, RTError(node.line, node.col, "Invalid OPers", context)
+            _, error = self.visit(identifier, obj_context)
+            if error: return None, error
+            identifier = identifier.name.value
+
+        else:
+            identifier = node.name.value
+
         value, error = self.visit(node.value, context)
         if error: return None, error
 
         if value == None:
             return None, RTError(node.line, node.col, 
                                  "Var can't be equal to NoneType", context)
-        context.symbol_table.set(identifier, value)
+        
+        elif isinstance(value, Object):
+            value.set_name(identifier)
+        obj_context.symbol_table.set(identifier, value)
+
+        # print(obj_context.symbol_table.symbols)
         return value, None
     
     def visit_VarAccessNode(self, node, context):
@@ -190,7 +254,7 @@ class Interpreter:
             return None, RTError(node.line, node.col, UNDEFINED_IDENTIFIER, 
                                  context, identifier)
  
-        return copy.deepcopy(value).set_context(context).set_position(
+        return value.set_context(context).set_position(
             node.line, node.col), None
         
     def visit_IfNode(self, node, context):
@@ -249,7 +313,7 @@ class Interpreter:
         return Array(elements).set_position(
             node.line, node.col).set_context(context), None
     
-    def visit_FunctionDefNode(self, node, context):
+    def visit_FunctionDefNode(self, node, context, add_to_sym = True):
         """
         
         """
@@ -261,7 +325,7 @@ class Interpreter:
         
         func = Function(node.name.value, node.args, node.body, should_rtn
                         ).set_context(context).set_position(node.line, node.col)
-        context.symbol_table.set(node.name.value, func)
+        if add_to_sym: context.symbol_table.set(node.name.value, func)
         return func, None
     
     def visit_ReturnNode(self, node, context):
@@ -272,3 +336,35 @@ class Interpreter:
         if error: return None, error
         return return_value.set_context(context).set_position(
             node.line, node.col), None    
+    
+    def visit_ClassDefNode(self, node, context):
+        """
+        
+        """
+        attributes = {}
+        methods = {}
+        if node.parent and context.object_table.get(node.parent) == None:
+            return None, RTError(node.line, node.col, 
+                                 "Class parent is not defined", 
+                                 context)
+        for attribute in node.attributes:
+            value, error = self.visit(attribute.value, context)
+            if error: return None, error
+            attributes[attribute.name.value] = value
+        
+        for method in node.methods:
+            value, error = self.visit_FunctionDefNode(method, context, False)
+            if error: return None, error
+            methods[value.name] = value
+
+        class_symbol_table = SymbolTable(None)
+        class_context = Context(node.name)
+        class_context.symbol_table = class_symbol_table
+        class_def =  Class(node.name, node.parent, node.init, attributes, 
+                           methods, class_context).set_context(context
+                            ).set_position(node.line, node.col)
+        context.symbol_table.set(node.name, class_def)
+        return None, None
+
+
+
