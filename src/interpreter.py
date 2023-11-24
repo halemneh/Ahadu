@@ -156,8 +156,7 @@ class Interpreter:
         if error:
             return None, error
         else:
-            return result.set_position(node.line, node.col).set_context(
-                context), None
+            return result, None
         
     def object_init(self, object, args):
         """
@@ -342,6 +341,7 @@ class Interpreter:
         """
         attributes = {}
         methods = {}
+        init = None
         if node.parent and context.object_table.get(node.parent) == None:
             return None, RTError(node.line, node.col, 
                                  "Class parent is not defined", 
@@ -356,10 +356,14 @@ class Interpreter:
             if error: return None, error
             methods[value.name] = value
 
+        if node.init:
+            init, error = self.visit(node.init, context)
+            if error: return None, error
+
         class_symbol_table = SymbolTable(None)
         class_context = Context(node.name)
         class_context.symbol_table = class_symbol_table
-        class_def =  Class(node.name, node.parent, node.init, attributes, 
+        class_def =  Class(node.name, node.parent, init, attributes, 
                            methods, class_context).set_context(context
                             ).set_position(node.line, node.col)
         context.symbol_table.set(node.name, class_def)

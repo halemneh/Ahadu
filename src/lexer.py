@@ -285,6 +285,9 @@ class Lexer:
             elif self.curr_char == ',':
                 tokens.append(Token(COMMA_T, self.line, self.col))
                 self.next_char()
+            elif self.curr_char == '\u1363':
+                tokens.append(Token(COMMA_T, self.line, self.col))
+                self.next_char()
             elif self.curr_char == '.':
                 tokens.append(Token(DOT_T, self.line, self.col))
                 self.next_char()

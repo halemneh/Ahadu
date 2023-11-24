@@ -30,42 +30,42 @@ class DefaultType:
         Returns an error since the defaultType doen't allow addition.
         """
         return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                             (type(x), "መደመር"))
+                             ((x, self), "መደመር"))
     
     def subtract(self, x):
         """
         Returns an error since the defaultType doen't allow subtraction.
         """
         return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                             (type(x), "መቀነስ"))
+                             ((x, self), "መቀነስ"))
     
     def multiply(self, x):
         """
         Returns an error since the defaultType doen't allow multiplication.
         """
         return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                             (type(x), "ማባዛት"))
+                             ((x, self), "ማባዛት"))
     
     def divide(self, x):
         """
         Returns an error since the defaultType doen't allow division.
         """
         return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                             (type(x), "ማካፈል"))
+                             ((x, self), "ማካፈል"))
     
     def power(self, x):
         """
         Returns an error since the defaultType doen't allow exponential.
         """
         return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                             (type(x), "ፓወር"))
+                             ((x, self), "ፓወር"))
     
     def lt(self, x):
         """
         Returns an error since the defaultType doen't allow less than comparison.
         """
         return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                             (type(x), "ማወዳደር"))
+                             ((x, self), "ማወዳደር"))
     
     def lte(self, x):
         """
@@ -73,14 +73,14 @@ class DefaultType:
         comparison.
         """
         return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                             (type(x), "ማወዳደር"))
+                             ((x, self), "ማወዳደር"))
     
     def gt(self, x):
         """
         Returns an error since the defaultType doen't allow greater than comparison.
         """
         return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                             (type(x), "ማወዳደር"))
+                             ((x, self), "ማወዳደር"))
     
     def gte(self, x):
         """
@@ -88,70 +88,70 @@ class DefaultType:
         comparison.
         """
         return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                             (type(x), "ማወዳደር"))
+                             ((x, self), "ማወዳደር"))
 
     def eq(self, x):
         """
         Returns an error since the defaultType doen't allow equal to comparison.
         """
         return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                             (type(x), "ማወዳደር"))
+                             ((x, self), "ማወዳደር"))
     
     def neq(self, x):
         """
         Returns an error since the defaultType doen't allow not equal to comparison.
         """
         return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                             (type(x), "ማወዳደር"))     
+                             ((x, self), "ማወዳደር"))     
 
     def or_(self, x):
         """
         Returns an error since the defaultType doen't allow or combinator.
         """
         return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                             (type(x), "ማወዳደር"))
+                             ((x, self), "ማወዳደር"))
     
     def and_(self, x):
         """
         Returns an error since the defaultType doen't allow and combinator.
         """
         return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                             (type(x), "ማወዳደር"))
+                             ((x, self), "ማወዳደር"))
     
     def at(self, x):
         """
         Returns an error since the defaultType doen't allow indexing.
         """
         return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                             (type(x), "indexing"))
+                             ((x, self), "indexing"))
     
     def slice(self, start, end):
         """
         Returns an error since the defaultType doen't allow slicing.
         """
         return None, RTError(start.line, start.col, ILLEGAL_OPERATION , self.context, 
-                             (type(self), "slicing"))
+                             ((self), "slicing"))
     
     def not_(self):
         """
         Returns an error since the defaultType doen't allow negation.
         """
         return None, RTError(self.line, self.col, ILLEGAL_OPERATION , self.context, 
-                             (type(self), "negating"))
+                             ((self), "negating"))
     
     def run(self, args, interpreter, func_context, line, col):
         """
         Returns an error since the defaultType doen't allow execution.
         """
         return None, RTError(args.line, args.col, ILLEGAL_OPERATION , self.context,
-                             (type(self), "excuting"))
+                             ((self), "excuting"))
     
     def dot(self, args):
         """
         Returns an error since the defaultType doen't allow execution.
         """
         return None, RTError(args.line, args.col, ILLEGAL_OPERATION , self.context,
-                             (type(self), "dot"))
+                             ((self), "dot"))
     
     def true(self):
         """
@@ -179,7 +179,7 @@ class Number(DefaultType):
             return Number(self.value + x.value).set_context(self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION , self.context, 
-                                 (type(x), "መደመር"))
+                                 ((x, self), "መደመር"))
         
     def subtract(self, x):
         """
@@ -189,7 +189,7 @@ class Number(DefaultType):
             return Number(self.value - x.value).set_context(self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION , self.context, 
-                                 (type(x), "መቀነስ"))
+                                 ((x, self), "መቀነስ"))
         
     def multiply(self, x):
         """
@@ -199,7 +199,7 @@ class Number(DefaultType):
             return Number(self.value * x.value).set_context(self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION , self.context, 
-                                 (type(x), "ማባዛት"))
+                                 ((x, self), "ማባዛት"))
     
     def divide(self, x):
         """
@@ -211,7 +211,7 @@ class Number(DefaultType):
             return Number(self.value / x.value).set_context(self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION , self.context,
-                                 (type(x), "ማካፈል"))
+                                 ((x, self), "ማካፈል"))
         
     def power(self, x):
         """
@@ -221,7 +221,7 @@ class Number(DefaultType):
             return Number(self.value ** x.value).set_context(self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION , self.context,
-                                 (type(x), "ፓወር"))
+                                 ((x, self), "ፓወር"))
         
     def lt(self, x):
         """
@@ -231,7 +231,7 @@ class Number(DefaultType):
             return Number(int(self.value < x.value)).set_context(self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION , self.context,
-                                 (type(x), "ማወዳደር"))
+                                 ((x, self), "ማወዳደር"))
         
     def lte(self, x):
         """
@@ -241,7 +241,7 @@ class Number(DefaultType):
             return Number(int(self.value <= x.value)).set_context(self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION , self.context,
-                                 (type(x), "ማወዳደር"))
+                                 ((x, self), "ማወዳደር"))
         
     def gt(self, x):
         """
@@ -251,7 +251,7 @@ class Number(DefaultType):
             return Number(int(self.value > x.value)).set_context(self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION , self.context,
-                                 (type(x), "ማወዳደር"))
+                                 ((x, self), "ማወዳደር"))
         
     def gte(self, x):
         """
@@ -261,7 +261,7 @@ class Number(DefaultType):
             return Number(int(self.value >= x.value)).set_context(self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION , self.context,
-                                 (type(x), "ማወዳደር"))
+                                 ((x, self), "ማወዳደር"))
         
     def eq(self, x):
         """
@@ -271,7 +271,7 @@ class Number(DefaultType):
             return Number(int(self.value == x.value)).set_context(self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION , self.context,
-                                 (type(x), "ማወዳደር"))
+                                 ((x, self), "ማወዳደር"))
     
     def neq(self, x):
         """
@@ -281,7 +281,7 @@ class Number(DefaultType):
             return Number(int(self.value != x.value)).set_context(self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION , self.context,
-                                 (type(x), "ማወዳደር"))
+                                 ((x, self), "ማወዳደር"))
         
     def or_(self, x):
         """
@@ -291,7 +291,7 @@ class Number(DefaultType):
             return Number(int(self.value or x.value)).set_context(self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION , self.context,
-                                 (type(x), "ማወዳደር"))
+                                 ((x, self), "ማወዳደር"))
         
     def and_(self, x):
         """
@@ -301,7 +301,7 @@ class Number(DefaultType):
             return Number(int(self.value and x.value)).set_context(self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION , self.context,
-                                 (type(x), "ማወዳደር"))
+                                 ((x, self), "ማወዳደር"))
         
     def not_(self):
         """
@@ -324,7 +324,7 @@ class String(DefaultType):
         self.value = value
 
     def __repr__(self):
-        return f'"{self.value}"'
+        return f'{self.value}'
     
 
     def add(self, x):
@@ -336,7 +336,7 @@ class String(DefaultType):
             return String(self.value + x.value).set_context(self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                                 (type(x), "መደመር"))
+                                 ((x, self), "መደመር"))
         
     def multiply(self, x):
         """
@@ -347,7 +347,7 @@ class String(DefaultType):
             return String(self.value * x.value).set_context(self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                                 (type(x), "መቀነስ"))
+                                 ((x, self), "መቀነስ"))
         
     def at(self, x):
         """
@@ -359,10 +359,10 @@ class String(DefaultType):
             if abs(x.value) >= len(self.value):
                 return None, RTError(x.line, x.col, INDEX_OUT_OF_BOUNDS, self.context, 
                                      (x.value, self))
-            return String(self.value[x]).set_context(self.context), None
+            return String(self.value[x.value]).set_context(self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                                 (type(x), "indexing"))
+                                 ((x, self), "indexing"))
         
     def slice(self, start, end):
         """
@@ -375,10 +375,10 @@ class String(DefaultType):
         if not end: end = Number(len(self.value) - 1)
         if not isinstance(start, Number):
             return None, RTError(start.line, start.col, ILLEGAL_OPERATION, self.context,
-                                 (type(start), "indexing"))
+                                 ((start), "indexing"))
         elif not isinstance(end, Number):
             return None, RTError(end.line, end.col, ILLEGAL_OPERATION, self.context, 
-                                 (type(end), "indexing"))
+                                 ((end), "indexing"))
         elif abs(start.value) >= len(self.value):
             return None, RTError(start.line, start.col, INDEX_OUT_OF_BOUNDS, 
                                  self.context, (start.value, self))
@@ -398,7 +398,7 @@ class String(DefaultType):
                 self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                                 (type(x), "ማወዳደር"))
+                                 ((x, self), "ማወዳደር"))
 
 
 # =======================================================================================
@@ -435,7 +435,7 @@ class Array(DefaultType):
             return self.value[x.value].set_context(self.context), None
         else:
             return None, RTError(x.line, x.col, ILLEGAL_OPERATION, self.context, 
-                                 (type(x), "indexing"))
+                                 ((x, self), "indexing"))
         
     def slice(self, start, end):
         """
@@ -449,10 +449,10 @@ class Array(DefaultType):
         if not end: end = Number(len(self.value) - 1)
         if not isinstance(start, Number):
             return None, RTError(start.line, start.col, ILLEGAL_OPERATION, self.context,
-                                 (type(start), "indexing"))
+                                 ((start), "indexing"))
         elif not isinstance(end, Number):
             return None, RTError(end.line, end.col, ILLEGAL_OPERATION, self.context, 
-                                 (type(end), "indexing"))
+                                 ((end), "indexing"))
         elif abs(start.value) >= len(self.value):
             return None, RTError(start.line, start.col, INDEX_OUT_OF_BOUNDS, 
                                  self.context, (start.value, self))
@@ -537,7 +537,7 @@ class Class(DefaultType):
         obj_context = copy.deepcopy(self.class_context)
         init_context.parent = obj_context
         if self.init == None: return obj_context, None
-        _, error = self.init.run(args, interpreter, init_context, line, col)
+        _, error = self.init.run(args, interpreter, obj_context, line, col)
         if error: return None, error
 
         return obj_context, None

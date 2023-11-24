@@ -4,8 +4,7 @@ from nodes import *
 
 # -----------------------------------------------------------------------------
 class Parser:
-    def __init__(self, tokens, text):
-        self.text = text
+    def __init__(self, tokens):
         self.tokens = tokens
         self.index = -1
         self.indent = 0
@@ -38,10 +37,12 @@ class Parser:
         """
         nodes, error = self.statements()
         if error: return None, error
-        print(self.curr_token)
+        
         if not error and self.curr_token.type != EOF_T:
+            print(self.curr_token)
+            print(nodes)
             return None, IllegalSyntaxError(self.curr_token.line, self.curr_token.col, 
-                                            'Should never happen')
+                                            'Incomplete expression#')
         return nodes, None
     
     def statements(self):
@@ -78,6 +79,8 @@ class Parser:
             if error: return None, error
             statements.append(expr)
             if isinstance(expr, ReturnNode):
+                while self.curr_token.type == NEWLINE_T:
+                    self.next_token()
                 return StatementNode(statements), None
 
         while True:
@@ -132,6 +135,8 @@ class Parser:
                 if error: return None, error
                 statements.append(expr)
                 if isinstance(expr, ReturnNode): 
+                    while self.curr_token.type == NEWLINE_T:
+                        self.next_token()
                     return StatementNode(statements), None
         return StatementNode(statements), None
     
@@ -219,7 +224,6 @@ class Parser:
             func, error = self.function_definition()
             if error: return None, error
             return func, None
-
         elif token.type == LPARAM_T:
             self.next_token()
             experssion, error = self.experssion()
@@ -244,26 +248,40 @@ class Parser:
             self.next_token()
             return StringNode(token), None
         
+        elif token.type == KEYWORD_T and token.value in BUILT_IN_FUNCS:
+            self.next_token()
+            if self.curr_token.type != LPARAM_T:
+                return None, IllegalSyntaxError(self.curr_token.line, 
+                                                self.curr_token.col,
+                                                "'(' expected")
+            self.next_token()
+            args, error = self.array(True)
+            if error: return None, error
+            if self.curr_token.type != RPARAM_T:
+                return None, IllegalSyntaxError(self.curr_token.line, 
+                                                self.curr_token.col,
+                                                RPARAM_MISSING_ERROR)
+            self.next_token()
+            return BuiltInFuncNode(token, args), None
+        
         elif token.match(KEYWORD_T, IF_T):
             return None, IllegalSyntaxError(token.line, token.col, 
-                                            "Expected Expression before IF", 
-                                            self.text[token.line - 1])
+                                            "Expected Expression before IF")
         elif token.match(KEYWORD_T, WHILE_T):
             return None, IllegalSyntaxError(token.line, token.col, 
-                                            "Expected Expression before WHILE",
-                                            self.text[token.line - 1])
+                                            "Expected Expression before WHILE")
         elif token.match(KEYWORD_T, ELIF_START_T):
             return None, IllegalSyntaxError(token.line, token.col, 
-                                            "IF required before ELIF",
-                                            self.text[token.line - 1])
+                                            "IF required before ELIF")
         self.prev_tokens()
         return None, IllegalSyntaxError(self.curr_token.line, self.curr_token.col, 
-                                        "Incomplete expression")
+                                        "Incomplete expression!")
     
     def array(self, PARAN = False):
         """
         Parses an array and returns a list of the array elements.
         """
+        
         array = []
         boundary = RPARAM_T if PARAN else RBRACKET_T
         error_type = RPARAM_MISSING_ERROR if PARAN else RBRACKET_MISSING_ERROR
@@ -280,9 +298,10 @@ class Parser:
             if self.curr_token.type != COMMA_T and (self.curr_token.type != boundary):
                 self.prev_tokens()
                 return None, IllegalSyntaxError(self.curr_token.line, self.curr_token.col, 
-                                                error_type)
+                                                "Expected Comma")
             
             if self.curr_token.type == COMMA_T: self.next_token()
+            
         return array, None
     
     def slice(self):
@@ -343,6 +362,7 @@ class Parser:
         Return a BinaryOpNode or an error
         """     
         if self.curr_token.type == IDENTIFIER_T:
+            start_index = self.index
             identifier = self.curr_token
             self.next_token()
             if self.curr_token.type == DOT_T:
@@ -357,15 +377,15 @@ class Parser:
                     if isinstance(call, BinaryOpNode):
                         return VarAssignNode(call, expr), None
                     return VarAssignNode(identifier, expr), None
-                return call, None
-            if self.curr_token.type == EQUAL_T:
+                for _ in range(self.index - start_index):
+                    self.prev_tokens()
+            elif self.curr_token.type == EQUAL_T:
                 self.next_token()
                 expr, error = self.experssion()
                 if error: return None, error
-                # if isinstance(identifier, BinaryOpNode):
-                #     return VarAssignNode((VarAccessNode(identifier), call), expr), None
                 return VarAssignNode(identifier, expr), None
-            self.prev_tokens()
+            else:
+                self.prev_tokens()
         elif self.curr_token.match(KEYWORD_T, RETURN_T):
             self.next_token()
             return_expr = None
@@ -373,23 +393,6 @@ class Parser:
                 return_expr, error = self.experssion()
                 if error: return None, error
             return ReturnNode(return_expr), None
-        elif self.curr_token.type == KEYWORD_T and (
-                self.curr_token.value in BUILT_IN_FUNCS):
-            name = self.curr_token
-            self.next_token()
-            if self.curr_token.type != LPARAM_T:
-                return None, IllegalSyntaxError(self.curr_token.line, 
-                                                self.curr_token.col,
-                                                "'(' expected")
-            self.next_token()
-            args, error = self.array(True)
-            if error: return None, error
-            if self.curr_token.type != RPARAM_T:
-                return None, IllegalSyntaxError(self.curr_token.line, 
-                                                self.curr_token.col,
-                                                RPARAM_MISSING_ERROR)
-            self.next_token()
-            return BuiltInFuncNode(name, args), None
         return self.binary_op(self.comp_expr, ((KEYWORD_T, AND_T), (KEYWORD_T, OR_T)))
 
         
@@ -554,7 +557,7 @@ class Parser:
         """
         
         """
-        if self.curr_token.type != IDENTIFIER_T:
+        if self.curr_token.type != IDENTIFIER_T and not self.curr_token.match(KEYWORD_T, INIT_T):
             return None, IllegalSyntaxError(self.curr_token.line, self.curr_token.col,
                                             "Function name not specified")
         
