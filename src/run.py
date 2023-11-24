@@ -56,7 +56,7 @@ def htmlify(val, error):
 
 
 """ RUN """
-f = open('out.text', 'w')
+f = open('out.txt', 'w')
 sys.stdout = f
 
 if len(sys.argv) < 2:
