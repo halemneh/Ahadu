@@ -2,7 +2,6 @@ from lexer import *
 from error import *
 from nodes import *
 
-# -----------------------------------------------------------------------------
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
@@ -12,8 +11,8 @@ class Parser:
 
     def next_token(self):
         """
-        Returns the next token in self.tokens after assigning it to 
-        self.curr_token and advancing self.index by one.
+        Returns the next token in self.tokens after assigning it to self.curr_token and 
+        advancing self.index by one.
         """
         self.index += 1
         if self.index < len(self.tokens):
@@ -22,8 +21,8 @@ class Parser:
     
     def prev_tokens(self):
         """
-        Returns the prevous token in self.tokens after assigning it to 
-        self.curr_token and reversing self.index by one.
+        Returns the prevous token in self.tokens after assigning it to self.curr_token 
+        and reversing self.index by one.
         """
         self.index -= 1
         if self.index >= 0:
@@ -32,10 +31,9 @@ class Parser:
     
     def parse(self):
         """
-        Returns an node object and an error if there is any after parsing 
-        self.tokens
+        Returns an node object and an error if there is any after parsing self.tokens
         """
-        nodes, error = self.statements()
+        nodes, error = self.program()
         if error: return None, error
         
         if not error and self.curr_token.type != EOF_T:
@@ -45,11 +43,16 @@ class Parser:
                                             'Incomplete expression#')
         return nodes, None
     
-    def statements(self):
+    def program(self):
         """
+        Returns a list of statements after parsing the program. 
         
+        Note: A program is a list ofconsecutive statements that have the same indentation 
+        level.
+        A statement can be an expression, an if statement, a while statement, a function 
+        definition, or a class definition each separated by a new line. 
         """
-        statements = []
+        program = []
         expr = None
         done = False
 
@@ -73,15 +76,15 @@ class Parser:
             self.next_token()
             obj, error = self.class_definition()
             if error: return None, error
-            statements.append(obj)
+            program.append(obj)
         else:
             expr, error = self.experssion()
             if error: return None, error
-            statements.append(expr)
+            program.append(expr)
             if isinstance(expr, ReturnNode):
                 while self.curr_token.type == NEWLINE_T:
                     self.next_token()
-                return StatementNode(statements), None
+                return StatementNode(program), None
 
         while True:
             line_count = 0
@@ -94,17 +97,17 @@ class Parser:
             if done:
                 if self.curr_token.match(KEYWORD_T, IF_T):
                     self.next_token()
-                    if_condition = statements.pop()
+                    if_condition = program.pop()
                     if_statment, error = self.if_expr(if_condition)
                     if error: return None, error
-                    statements.append(if_statment)
+                    program.append(if_statment)
                     done = False
                 elif self.curr_token.match(KEYWORD_T, WHILE_T):
                     self.next_token()
-                    while_condition = statements.pop()
+                    while_condition = program.pop()
                     if_statment, error = self.while_expr(while_condition)
                     if error: return None, error
-                    statements.append(if_statment)
+                    program.append(if_statment)
                     done = False
                 elif isinstance(expr, FunctionDefNode):
                     done = False
@@ -129,16 +132,16 @@ class Parser:
                 self.next_token()
                 obj, error = self.class_definition()
                 if error: return None, error
-                statements.append(obj)
+                program.append(obj)
             else:
                 expr, error = self.experssion()
                 if error: return None, error
-                statements.append(expr)
+                program.append(expr)
                 if isinstance(expr, ReturnNode): 
                     while self.curr_token.type == NEWLINE_T:
                         self.next_token()
-                    return StatementNode(statements), None
-        return StatementNode(statements), None
+                    return StatementNode(program), None
+        return StatementNode(program), None
     
     def binary_op(self, func_a, ops, func_b=None):
         """
@@ -432,7 +435,7 @@ class Parser:
         
         if self.curr_token.type == NEWLINE_T:
             self.indent += 1
-            if_statement, error = self.statements()
+            if_statement, error = self.program()
             if error: return None, error
             cases.append((if_condition, if_statement))
             self.indent -= 1
@@ -468,7 +471,7 @@ class Parser:
                 if self.curr_token.type == NEWLINE_T:
                     # self.next_token()
                     self.indent += 1
-                    elif_statement, error = self.statements()
+                    elif_statement, error = self.program()
                     if error: return None, error
                     cases.append((elif_condition, elif_statement))
                     self.indent -= 1
@@ -498,7 +501,7 @@ class Parser:
                 if self.curr_token.type == NEWLINE_T:
                     self.next_token()
                     self.indent += 1
-                    else_case, error = self.statements()
+                    else_case, error = self.program()
                     if error: return None, error
                     self.indent -= 1
 
@@ -548,7 +551,7 @@ class Parser:
             if error: return None, error
             return WhileNode(while_condition, expr)
         self.indent += 1
-        statement, error = self.statements()
+        statement, error = self.program()
         if error: return None, error
         self.indent -= 1
         return WhileNode(while_condition, statement), None
@@ -600,7 +603,7 @@ class Parser:
         if self.curr_token.type == NEWLINE_T:
             self.next_token()
             self.indent += 1
-            body, error = self.statements()
+            body, error = self.program()
             if error: return None, error
             self.indent -= 1
 
