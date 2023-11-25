@@ -1,10 +1,12 @@
 from type import *
 from constants import *
+from nodes import BinaryOpNode, ProgramNode, ReturnNode
 from error import *
-from parser_ import ReturnNode, ProgramNode, BinaryOpNode
 
 import copy
 
+# =======================================================================================
+# =======================================================================================
 class Context:
     def __init__(self, name, parent = None, parent_line = None):
         self.name = name
@@ -12,6 +14,8 @@ class Context:
         self.parent_line = parent_line
         self.symbol_table = None
 
+# =======================================================================================
+# =======================================================================================
 class SymbolTable:
     def __init__(self, parent):
         self.parent = parent
@@ -29,8 +33,8 @@ class SymbolTable:
     def remove(self, identifier):
         return self.symbols[identifier]
     
-
-
+# =======================================================================================
+# =======================================================================================
 class Interpreter:
     def visit(self, node, context):
         """
@@ -396,3 +400,6 @@ class Interpreter:
             return None, None
         except:
             return None, RTError(line, col, "Print Failed", context)
+        
+# =======================================================================================
+# =======================================================================================

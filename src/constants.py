@@ -59,7 +59,6 @@ DELETE_T = 'DELETE'
 
 KEYWORS = {
     'ቁጥር': INT_T, 
-    'ባዶ': 'NONE',
     'እውነታ': BOOL_T,
     'ፊደል': 'CHAR',
     'ጽሁፍ': 'STRING',
@@ -94,8 +93,6 @@ KEYWORS = {
     'ሠርዝ': DELETE_T
 }
 
-BUILT_IN_FUNCS = (PRINT_T, JOIN_T, DELETE_T)
-
 # =======================================================================================
 # Error types and messages 
 # =======================================================================================
@@ -124,3 +121,4 @@ NO_OF_ARGS_PASSED = ''
 NUMS = '0123456789'
 ALPHANUMERAL = r'[a-zA-Z\u1200-\u135A0-9_]+'
 ESCAPE = {'n': '\n', 't': '\t'}
+BUILT_IN_FUNCS = (PRINT_T, JOIN_T, DELETE_T)

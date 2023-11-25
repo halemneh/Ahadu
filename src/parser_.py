@@ -3,6 +3,8 @@ from constants import *
 from error import IllegalSyntaxError, IndentationError
 from nodes import *
 
+# =======================================================================================
+# =======================================================================================
 class Parser:
     """
     The parser converts the list of token passed to it from the lexer to an AST
@@ -808,3 +810,6 @@ class Parser:
                                                 self.curr_token.col,
                                                 "Not a var or a method")
         return ClassDefNode(class_name, parent, init, attributes, methods), None
+    
+# =======================================================================================
+# =======================================================================================

@@ -12,15 +12,15 @@ class Error:
 
     def code_snippit(self):
         """
-        Returns a string with the snippit of the code where the error occured
-        with an arrow pointing to the specific location of the error.
+        Returns a string with the snippit of the code where the error occured with an 
+        arrow pointing to the specific location of the error.
+        
         Note: a snipit of code is one line of code.
         """
         snippit = '------------------------------------------------------------\n'
         snippit += f'\n\t{self.line}: {self.text}\n'
         arrow_index = ' ' * (self.col + len(str(self.line)) + 1)
         snippit += f'\t{arrow_index}\u2191\n'
-        # snippit += '------------------------------------------------------------'
         return snippit
 
     def msg_as_string(self):
@@ -35,6 +35,7 @@ class Error:
 # =======================================================================================
 # =======================================================================================
 class IllegalCharacterError(Error):
+    """ An error if the program includes a character that is not recognized. """
     def __init__(self, line, col, details):
         super().__init__(line, col, ILLEGAL_CHARACTER_ERROR, details, "")
 
@@ -51,7 +52,7 @@ class IndentationError(Error):
 
     def msg_as_string(self):
         """
-        Returns an error message as a string for an indentation error
+        Returns an error message as a string for an indentation error.
         """
         
         result = f'{self.type}: መስመር {self.line} ላይ: {self.col}ኛው ካራክተ \n'
@@ -66,6 +67,7 @@ class IndentationError(Error):
 # =======================================================================================
 # =======================================================================================
 class IllegalSyntaxError(Error):
+    """ An error if the program structure doesn't follow the defined grammer."""
     def __init__(self, line, col, details):
         if details in (RPARAM_MISSING_ERROR, RBRACKET_MISSING_ERROR): col += 1
         super().__init__(line, col, ILLEGAL_SYNTAX_ERROR, details)
@@ -73,12 +75,19 @@ class IllegalSyntaxError(Error):
 # =======================================================================================
 # =======================================================================================
 class RTError(Error):
+    """ 
+    An error that occurs while running the program. It can happen when type rules are
+    broken or undefined identifiers are accesed.
+    """
     def __init__(self, line, col, details, context, extra_info = None):
         super().__init__(line, col, RUNTIME_ERROR, details, '')
         self.context = context
         self.extra_info = extra_info
 
     def msg_as_string(self):
+        """
+        Returns an error message as a string for a runtime error.
+        """
         result = f'{self.type} መስመር {self.line} ላይ: {self.col}ኛው ካራክተ ላይ\n'
         result += f'{self.code_snippit()}\n'
         if self.details == ILLEGAL_OPERATION:
@@ -104,6 +113,9 @@ class RTError(Error):
         return result + f'\n\n{self.generate_traceback()}\n'
     
     def generate_traceback(self):
+        """
+        Generates function call traceback to be shown alomg the error message.
+        """
         result = ''
         result = f'\n\t\t \u2193 \t {self.context.name} ውስጥ {self.details}\n' + result
         line = self.line
@@ -122,6 +134,9 @@ class RTError(Error):
         return result
 
     def type_of(self, obj):
+        """
+        Returns the type of obj in Amharic text.
+        """
         type_ = type(obj)
         type_extracted = None
         if str(type_) == "<class 'type.String'>":

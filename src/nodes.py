@@ -1,3 +1,5 @@
+# =======================================================================================
+# =======================================================================================
 class ProgramNode:
     def __init__(self, expr_list):
         self.expr_list = expr_list
@@ -10,7 +12,9 @@ class ProgramNode:
             result += f'({expr}),\n'
 
         return result + ']'
-    
+
+# =======================================================================================
+# =======================================================================================
 class NumberNode:
     def __init__(self, token):
         self.token = token
@@ -20,6 +24,30 @@ class NumberNode:
     def __repr__(self):
         return f'{self.token}'
     
+# =======================================================================================
+# =======================================================================================
+class StringNode:
+    def __init__(self, string):
+        self.string = string
+        self.line = self.string.line
+        self.col = self.string.col
+
+    def __repr__(self):
+        return f'"{self.string.value}"'
+    
+# =======================================================================================
+# =======================================================================================
+class ArrayNode:
+    def __init__(self, array, line, col):
+        self.array = array
+        self.line = line
+        self.col = col
+
+    # def __repr__(self):
+    #     return self.array
+    
+# =======================================================================================
+# =======================================================================================
 class BinaryOpNode:
     def __init__(self, left_node, op_token, right_node):
         self.left_node = left_node
@@ -31,6 +59,8 @@ class BinaryOpNode:
     def __repr__(self):
         return f'({self.left_node}, {self.op_token}, {self.right_node})'
 
+# =======================================================================================
+# =======================================================================================
 class UnaryOpNode:
     def __init__(self, op_token, node):
         self.op_token = op_token
@@ -41,6 +71,8 @@ class UnaryOpNode:
     def __repr__(self):
         return f'({self.op_token}, {self.node})'
     
+# =======================================================================================
+# =======================================================================================
 class VarAssignNode:
     def __init__(self, identifier, value):
         self.name = identifier
@@ -51,6 +83,8 @@ class VarAssignNode:
     def __repr__(self):
         return f'({str(self.name)} = {self.value})'
 
+# =======================================================================================
+# =======================================================================================
 class VarAccessNode:
     def __init__(self, identifier):
         self.name = identifier
@@ -60,8 +94,8 @@ class VarAccessNode:
     def __repr__(self):
         return f'({self.name.value})'
     
-
-    
+# =======================================================================================
+# =======================================================================================
 class IfNode:
     def __init__(self, cases, else_case):
         self.cases = cases
@@ -73,23 +107,25 @@ class IfNode:
         res = ''
         for i in range(len(self.cases)):
             if i == 0:
-                if isinstance(self.cases[i][1], StatementNode):
+                if isinstance(self.cases[i][1], ProgramNode):
                     res += f'(IF: {self.cases[i][0]} :- \n {self.cases[i][1]})\n'
                 else:
                     res += f'(IF: {self.cases[i][0]} :- {self.cases[i][1]})\n'
             else:
-                if isinstance(self.cases[i][1], StatementNode):
+                if isinstance(self.cases[i][1], ProgramNode):
                     res += f' (ELIF: {self.cases[i][0]} :- \n {self.cases[i][1]})\n'
                 else:
                     res += f' (ELIF: {self.cases[i][0]} :- {self.cases[i][1]})\n'
         if self.else_case != None:
-            if isinstance(self.cases[i][1], StatementNode):
+            if isinstance(self.cases[i][1], ProgramNode):
                 res += f' (ELSE:- \n {self.else_case})\n'
             else:
                 res += f' (ELSE:- {self.else_case})\n'
         
         return res
 
+# =======================================================================================
+# =======================================================================================
 class WhileNode:
     def __init__(self, condition, statements):
         self.condition = condition
@@ -100,24 +136,8 @@ class WhileNode:
     def __repr__(self):
         return f'(WHILE: {self.condition}:-\n {self.statement}\n)'
     
-class StringNode:
-    def __init__(self, string):
-        self.string = string
-        self.line = self.string.line
-        self.col = self.string.col
-
-    def __repr__(self):
-        return f'"{self.string.value}"'
-    
-class ArrayNode:
-    def __init__(self, array, line, col):
-        self.array = array
-        self.line = line
-        self.col = col
-
-    # def __repr__(self):
-    #     return self.array
-
+# =======================================================================================
+# =======================================================================================
 class FunctionDefNode:
     def __init__(self, name, args, body):
         self.name = name
@@ -129,6 +149,8 @@ class FunctionDefNode:
     def __repr__(self):
         return f'[{self.name.value} ({self.args}):\n ({self.body})]'
     
+# =======================================================================================
+# =======================================================================================
 class ReturnNode:
     def __init__(self, expr):
         self.expr = expr
@@ -138,6 +160,8 @@ class ReturnNode:
     def __repr__(self):
         return f'Return: {self.expr}'
     
+# =======================================================================================
+# =======================================================================================
 class ClassDefNode:
     def __init__(self, name, parent, init, attributes, methods):
         self.name = name.value
@@ -151,9 +175,14 @@ class ClassDefNode:
     def __repr__(self):
         return f'[Class: <{self.name}>]'
     
+# =======================================================================================
+# =======================================================================================
 class BuiltInFuncNode:
     def __init__(self, name, args):
         self.args = args
         self.name = name.value
         self.line = name.line
         self.col = name.col
+
+# =======================================================================================
+# =======================================================================================

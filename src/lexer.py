@@ -2,6 +2,8 @@ from constants import *
 from error import *
 import re
 
+# =======================================================================================
+# =======================================================================================
 class Token:
     def __init__(self, type, line, col, value = None):
         self.value = value
@@ -9,17 +11,18 @@ class Token:
         self.line = line
         self.col = col
 
-    
     def __repr__(self):
         if self.value: return f'{self.type}:{self.value}'
         return f'{self.type}'
     
     def match(self, type, value = None):
         """
-        Returns if token has the given type and value.
+        Returns True if token has the given type and value.
         """
         return self.type == type and self.value == value
-    
+
+# =======================================================================================
+# =======================================================================================  
 class Lexer:
     def __init__(self, text):
         self.text = text
@@ -31,8 +34,8 @@ class Lexer:
 
     def next_char(self):
         """ 
-        Progresses self.curr_char to the next char in the text while also 
-        updating the line and col variable to the appropriate values. 
+        Progresses self.curr_char to the next char in the text while also updating the 
+        line and col variable to the appropriate values. 
         """
         self.col += 1
         self.index += 1
@@ -45,15 +48,13 @@ class Lexer:
         if self.curr_char == '\n':
             self.line += 1
             self.col = 0
-            # self.next_char()
 
     def check_indentation(self):
         """
-        Returns a list of TAB_T tokens if they exist starting at curr_token or
-        an error if there is an indentation error.
-        A tab is defined as a \t character or four consecutive space characters
-        that apear at a start of line. At a start of line, there can be more 
-        than more tabs hence why the method returns a list.
+        Returns a list of TAB_T tokens if they exist starting at curr_token or an error 
+        if there is an indentation error. A tab is defined as a \t character or four 
+        consecutive space characters that apear at a start of line. At a start of line, 
+        there can be more than more tabs hence why the method returns a list.
         """
         tabs = []
         space_counter = 0
@@ -104,8 +105,8 @@ class Lexer:
     
     def alpha_token(self):
         """
-        Returns a keyword token is the word is in the keyword list. Otherwise,
-        returns an identifier token.
+        Returns a keyword token is the word is in the keyword list. Otherwise, returns an 
+        identifier token.
         """
         word = ''
         start_col = self.col
@@ -116,11 +117,6 @@ class Lexer:
             self.next_char()
         
         if word in KEYWORS:
-            # if KEYWORS[word] == IF_T and self.curr_char == ' ' and (
-            #     self.text[self.index + 1: self.index + 4] == ELIF):
-            #     for _ in range(4):
-            #         self.next_char()
-            #     return Token(KEYWORD_T, start_line, start_col, ELIF_T)
             if KEYWORS[word] == WHILE_T and self.curr_char == ' ' and (
                 self.text[self.index + 1: self.index + 4] == WHILE):
                 for _ in range(4):
@@ -133,8 +129,8 @@ class Lexer:
         
     def check_equal(self):
         """
-        Returns an EQ_T token if the equal sign is followed by another equal 
-        sign or an EQUAL_T token otherwise.
+        Returns an EQ_T token if the equal sign is followed by another equal sign or an 
+        EQUAL_T token otherwise.
         """
         start_line = self.line
         start_col = self.col
@@ -146,8 +142,8 @@ class Lexer:
     
     def check_greater_than(self):
         """
-        Returns an GTE_T token if the greater than sign is followed by an equal 
-        sign or an GT_T token otherwise.
+        Returns an GTE_T token if the greater than sign is followed by an equal sign or 
+        an GT_T token otherwise.
         """
         start_line = self.line
         start_col = self.col
@@ -159,8 +155,8 @@ class Lexer:
     
     def check_less_than(self):
         """
-        Returns an LTE_T token if the less than sign is followed by an equal 
-        sign or an LT_T token otherwise.
+        Returns an LTE_T token if the less than sign is followed by an equal sign or an 
+        LT_T token otherwise.
         """
         start_line = self.line
         start_col = self.col
@@ -172,8 +168,8 @@ class Lexer:
     
     def check_negation(self):
         """
-        Returns an NEQ_T token if the exclaimtion sign is followed by an
-        eqaul sign or an KEYWORD_T:NOT token otherwise.
+        Returns an NEQ_T token if the exclaimtion sign is followed by an eqaul sign or an 
+        KEYWORD_T:NOT token otherwise.
         """
         start_line = self.line
         start_col = self.col
@@ -185,7 +181,8 @@ class Lexer:
     
     def check_then(self):
         """
-        
+        Returns a Token of type then if ':' is folloed by '-' or a colon token if it is 
+        not.
         """
         start_line = self.line
         start_col = self.col
@@ -197,7 +194,7 @@ class Lexer:
     
     def check_string(self):
         """
-        
+        Creates a string token for a string literal.
         """
         start_line = self.line
         start_col = self.col
@@ -222,8 +219,8 @@ class Lexer:
     
     def lexer(self):
         """
-        Returns a list of tokens from self.text and an IllegalCharacter error
-        if it exists.
+        Returns a list of tokens from self.text and an IllegalCharacter error if it 
+        exists (unknown character exists).
         """
         self.next_char()
 
@@ -246,9 +243,9 @@ class Lexer:
                 tokens.append(self.alpha_token())
             elif self.curr_char == '=':
                 tokens.append(self.check_equal())
-            elif self.curr_char == '>':
+            elif self.curr_char in '>\u203a':
                 tokens.append(self.check_greater_than())
-            elif self.curr_char == '<':
+            elif self.curr_char in '<\u2039':
                 tokens.append(self.check_less_than())
             elif self.curr_char == '!':
                 tokens.append(self.check_negation())
@@ -291,7 +288,7 @@ class Lexer:
             elif self.curr_char == '.':
                 tokens.append(Token(DOT_T, self.line, self.col))
                 self.next_char()
-            elif self.curr_char == ':':
+            elif self.curr_char in ':\u1361':
                 tokens.append(self.check_then())
             elif self.curr_char == '\u1366':
                 tokens.append(Token(THEN_T, self.line, self.col))
@@ -301,3 +298,6 @@ class Lexer:
             
         tokens.append(Token(EOF_T, self.line, self.col))
         return tokens, None
+    
+# =======================================================================================
+# =======================================================================================
