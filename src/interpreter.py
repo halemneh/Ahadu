@@ -1,7 +1,7 @@
 from type import *
 from constants import *
 from error import *
-from parser_ import ReturnNode, StatementNode, BinaryOpNode
+from parser_ import ReturnNode, ProgramNode, BinaryOpNode
 
 import copy
 
@@ -46,7 +46,7 @@ class Interpreter:
         """
         raise Exception(f'No visit_{type(node).__name__} method defined!')
     
-    def visit_StatementNode(self, node, context):
+    def visit_ProgramNode(self, node, context):
         """
         
         """
@@ -316,7 +316,7 @@ class Interpreter:
         
         """
         should_rtn  = False
-        if isinstance(node.body, StatementNode):
+        if isinstance(node.body, ProgramNode):
             should_rtn = isinstance(node.body.expr_list[-1], ReturnNode)
         else:
             should_rtn = isinstance(node.body, ReturnNode)

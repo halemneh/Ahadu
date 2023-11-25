@@ -1,3 +1,16 @@
+class ProgramNode:
+    def __init__(self, expr_list):
+        self.expr_list = expr_list
+        self.line = expr_list[0].line
+        self.col = expr_list[0].col
+
+    def __repr__(self):
+        result = '['
+        for expr in self.expr_list:
+            result += f'({expr}),\n'
+
+        return result + ']'
+    
 class NumberNode:
     def __init__(self, token):
         self.token = token
@@ -47,18 +60,7 @@ class VarAccessNode:
     def __repr__(self):
         return f'({self.name.value})'
     
-class StatementNode:
-    def __init__(self, expr_list):
-        self.expr_list = expr_list
-        self.line = expr_list[0].line
-        self.col = expr_list[0].col
 
-    def __repr__(self):
-        result = '['
-        for expr in self.expr_list:
-            result += f'({expr}),\n'
-
-        return result + ']'
     
 class IfNode:
     def __init__(self, cases, else_case):
