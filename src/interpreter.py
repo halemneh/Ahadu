@@ -1,10 +1,10 @@
-from type import *
-from constants import *
-from nodes import BinaryOpNode, ProgramNode, ReturnNode
-from error import *
+from resources.type import *
+from resources.constants import *
+from resources.nodes import BinaryOpNode, ProgramNode, ReturnNode
+from resources.error import *
 
 import copy
-
+## saraachour
 # =======================================================================================
 # =======================================================================================
 class Context:
@@ -22,12 +22,19 @@ class SymbolTable:
         self.symbols = {}
 
     def get(self, identifier):
+        """ 
+        Get the value associated with the identifier in the symbol table of the context 
+        or of the parent's context. 
+        """
         value = self.symbols.get(identifier, None)
         if not value and self.parent:
             return self.parent.get(identifier)
         return value
     
     def set(self, identifier, value):
+        """
+        Add an identifier value pair into the symbols dictionary.
+        """
         self.symbols[identifier] = value
 
     def remove(self, identifier):
@@ -58,7 +65,6 @@ class Interpreter:
         for expr in node.expr_list:
             value, error = self.visit(expr, context)
             if error: return None, error
-            # print(value)
         return value, None
         
     

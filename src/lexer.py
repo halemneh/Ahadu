@@ -1,5 +1,5 @@
-from constants import *
-from error import *
+from resources.constants import *
+from resources.error import *
 import re
 
 # =======================================================================================
@@ -228,6 +228,12 @@ class Lexer:
 
         while self.curr_char != None:
             if self.curr_char == '\n':
+                tokens.append(Token(NEWLINE_T, self.line, self.col))
+                self.next_char()
+            elif self.curr_char == '\r\n':
+                tokens.append(Token(NEWLINE_T, self.line, self.col))
+                self.next_char()
+            elif self.curr_char == '\r':
                 tokens.append(Token(NEWLINE_T, self.line, self.col))
                 self.next_char()
             elif self.curr_char in ' \t':

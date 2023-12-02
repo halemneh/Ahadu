@@ -1,7 +1,7 @@
-from lexer import Token
-from constants import *
-from error import IllegalSyntaxError, IndentationError
-from nodes import *
+from src.lexer import Token
+from resources.constants import *
+from resources.error import IllegalSyntaxError, IndentationError
+from resources.nodes import *
 
 # =======================================================================================
 # =======================================================================================
@@ -647,7 +647,7 @@ class Parser:
         if self.curr_token.type != NEWLINE_T:
             expr, error = self.experssion()
             if error: return None, error
-            return WhileNode(while_condition, expr)
+            return WhileNode(while_condition, expr), None
         self.indent += 1
         statement, error = self.program()
         if error: return None, error
