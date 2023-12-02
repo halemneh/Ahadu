@@ -1,0 +1,29 @@
+statements := NEWLINE* TAB* experssion (NEWLINE+ experssion | if-expr | while_expr)* NEWLINE*
+
+expression ::= KEYWORD:INT IDENTIFIER EQUAL arith_expr
+             = comp_expr ((KEYWORD:AND | KEYWORD|OR) comp_expr)*
+
+comp_expr := KEYWORD:NOT comp_expr
+           = arith_expr ((EQ | LT | LTE | GT | GTE | NEQ) arith_expr)*
+
+arith_expr := term ((PLUS | MINUS) term)*
+
+term := factor ((MULT | DIVIDE) factor)*
+
+factor := (PLUS | MINUS) factor
+        = power
+
+power := atom (POWER factor)*
+
+atom := INT | IDENTIFIER | LIST | STRING | IDENTIFIER([INT?:INT?] | [INT])
+      = LPRAM expression RPARAM
+
+array := LBRACKET (atom)* RBRACKET
+
+if-expr := expr KEYWORD:IF :- (expr if-a|if-b) |
+           NEWLINE statements (indet + 1)
+
+function-expr := KEYWORD:FUNC IDENTIFIER LPRAM (IDENTIFIER (COMMA IDENTIFIER)*)* RPARAM THEN
+                (expression | NEWLINE statements)
+
+function-call := 
