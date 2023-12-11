@@ -96,11 +96,17 @@ class Lexer:
         Returns a number token.
         """
         num = ''
+        dot = False
         start_col = self.col
         start_line = self.line
-        while self.curr_char != None and self.curr_char in NUMS:
+        while self.curr_char != None and (
+                self.curr_char in NUMS or (self.curr_char == '.' and not dot)):
+            if self.curr_char == '.':
+                dot = True
             num += self.curr_char
             self.next_char()
+        if dot:
+            return Token(INT_T, start_line, start_col, float(num))
         return Token(INT_T, start_line, start_col, int(num))
     
     def alpha_token(self):
@@ -111,6 +117,11 @@ class Lexer:
         word = ''
         start_col = self.col
         start_line = self.line
+
+        if self.curr_char == '\u12e8':
+            self.next_char()
+            return Token(OF_T, start_line, start_col)
+        
         while self.curr_char != None and re.match(ALPHANUMERAL, 
                                                   self.curr_char):
             word += self.curr_char
@@ -198,12 +209,18 @@ class Lexer:
         """
         start_line = self.line
         start_col = self.col
+        curr_col = start_col + 1
+
         string = ''
         escape = False
         quote = "'" if self.curr_char == "'" else '"'
         self.next_char()
 
         while self.curr_char != None and (self.curr_char != quote or escape):
+            if self.curr_char == '\n' or self.curr_char == '\r' or (
+                self.curr_char == '\r\n'):
+                return None, IllegalCharacterError(self.line - 1, curr_col, 
+                                                   INCOMPELTE_STR)
             if escape:
                 string += ESCAPE.get(self.curr_char, self.curr_char)
                 escape = False
@@ -212,10 +229,19 @@ class Lexer:
                     escape = True
                 else:
                     string += self.curr_char
-
+            curr_col += 1
             self.next_char()
         self.next_char()
-        return Token(STRING_T, start_line, start_col, string)
+        return Token(STRING_T, start_line, start_col, string), None
+    
+    def comment_line(self):
+        """
+        Removes a line of comment
+        """
+        while self.curr_char != '\n' and self.curr_char != '\r' and (
+                self.curr_char != '\r\n'):
+            self.next_char()
+        self.next_char()
     
     def lexer(self):
         """
@@ -227,7 +253,9 @@ class Lexer:
         tokens = []
 
         while self.curr_char != None:
-            if self.curr_char == '\n':
+            if self.curr_char == '#':
+                self.comment_line()
+            elif self.curr_char == '\n':
                 tokens.append(Token(NEWLINE_T, self.line, self.col))
                 self.next_char()
             elif self.curr_char == '\r\n':
@@ -242,7 +270,9 @@ class Lexer:
                     return [], err
                 tokens += tab_tokens
             elif self.curr_char == '"' or self.curr_char == "'":
-                tokens.append(self.check_string())
+                str, error = self.check_string()
+                if error: return None, error
+                tokens.append(str)
             elif self.curr_char in NUMS:
                 tokens.append(self.num_token())
             elif re.match(ALPHANUMERAL, self.curr_char):

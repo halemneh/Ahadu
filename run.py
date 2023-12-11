@@ -3,6 +3,8 @@ from src.parser_ import Parser
 from src.interpreter import *
 from resources.type import *
 from resources.constants import RUNTIME_ERROR
+
+import argparse
 import sys
 import pdb
 
@@ -33,7 +35,7 @@ def run(text):
     return return_val, error
 
 def htmlify(val, error):
-    html = '<html><head><link rel="stylesheet" href="frame.css"></head><body>'
+    html = ''
     if error:
         if error.type != RUNTIME_ERROR:
             error_msg = error.msg_as_string().split('\n')
@@ -54,22 +56,17 @@ def htmlify(val, error):
 
     return html
 
+def main():
+    parser = argparse.ArgumentParser(description='Run Ahadu code')
+    parser.add_argument('filepath', help='Ahadu filepath')
+    args = parser.parse_args()
+    with open(args.filepath) as file:
+        text = file.read()
+    val, error = run(text)
+    if error:
+        print(error.msg_as_string())
 
-""" RUN """
-# f = open('out.txt', 'w')
-# sys.stdout = f
-
-# if len(sys.argv) < 2:
-#     print("Error: filepath not passed!")
-# elif len(sys.argv) > 2:
-#     print("Error: More than 1 arguments passed!")
-# file_name = sys.argv[1]
-
-# with open(file_name) as file:
-#     text = file.read()
-
-# val, error = run(text)
-# if error:
-#     f.write(error.msg_as_string())
-# # elif val != Number(0):
-# #     f.write(str(val))
+    
+if __name__ == '__main__':
+    main()
+    

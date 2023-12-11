@@ -181,7 +181,35 @@ class Parser:
         Parses an expression.
         An expression can be a BinaryNode, UnaryNode, a number, string, or array nodes, 
         a variable assign or access node or a return statement.
-        """     
+        """ 
+        if self.curr_token.type == OF_T:
+            """
+            Looks for an assignment to a refrencing to an attributre or a method by using 
+            the OF_T token.
+            """    
+            dot = Token(DOT_T, self.curr_token.line, self.curr_token.col)
+            start_index = self.index
+            self.next_token()
+            
+            if self.curr_token.type != IDENTIFIER_T:
+                return None, IllegalSyntaxError(self.curr_token.line, self.curr_token.col,
+                                                "Expected an object identifier")
+            object = self.curr_token
+
+            self.next_token()
+            if self.curr_token.type != IDENTIFIER_T:
+                return None, IllegalSyntaxError(self.curr_token.line, self.curr_token.col,
+                                                "Expected an attribute or method name")
+            attr = self.curr_token
+            self.next_token()
+            if self.curr_token.type == EQUAL_T:
+                self.next_token()
+                expr, error = self.experssion()
+                if error: return None, error
+                return VarAssignNode(BinaryOpNode(VarAccessNode(object), dot, (VarAccessNode(attr), None)), expr), None
+            for _ in range(self.index - start_index):
+                self.prev_tokens() 
+
         if self.curr_token.type == IDENTIFIER_T:
             """ 
             Looks for a variable assignment. The variable can be an attribute of an 
@@ -214,6 +242,7 @@ class Parser:
                 return VarAssignNode(identifier, expr), None
             else:
                 self.prev_tokens()
+
         elif self.curr_token.match(KEYWORD_T, RETURN_T):
             """ 
             If the first token in the experssion is a keyword of value RETURN we return a 

@@ -55,12 +55,13 @@ class IndentationError(Error):
         Returns an error message as a string for an indentation error.
         """
         
-        result = f'{self.type}: መስመር {self.line} ላይ: {self.col}ኛው ካራክተ \n'
+        result = f'{self.type}: መስመር {self.line} ላይ: {self.col}ኛው ምልክት \n'
         result += f'{self.code_snippit()}\n'
         if self.indent == -1:
-            result += f'Indentaions have to be a tab or four spaces!'
+            result += f'አንድ የመስመር መጀመሪያ ክፍተት አራት ስፔሶች ወይም አንድ ታብ መሆን አለበት።'
         else:
-            result += f'More indentation than expected. Expected {self.indent} indents!'
+            result += f'የዚህ መስመር ላይ ከሚያስፈልገው በላይ ክፍተት አለ። {self.indent} ክፍተት ይጠነቃል።\n'
+            result += f'ማስታወሻ፦ አንድ የመስመር መጀመሪያ ክፍተት አራት ስፔሶች ወይም አንድ ታብ መሆን አለበት።'
         return result
 
 
