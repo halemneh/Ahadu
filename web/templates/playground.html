@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename = 'css/playground.css')}}">
+<script src="{{ url_for('static', filename = 'javascript/playground.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <!-- Input half -->
+    <div class="editor">
+        <textarea name="code" cols="30" rows="10" placeholder="እዚህ ላይ ኮድ ይፃፉ" class="code"></textarea>
+    </div>
+
+    <!-- Output half -->
+    <div class="output">
+        <button id = "run">RUN</button>
+        <div id="result">
+            {% if result %}
+            {{result}}
+            {% else %}
+            Results will be displayed here.
+            {% endif %}
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function() {
+    var socket = io.connect("http://120.0.0.1:5000/")
+    $('#run').on('click', function() {
+        socket.send($('.code').val());
+    });
+    console.log($('.code').val())
+})
+</script>
+{% endblock %}
