@@ -4,7 +4,7 @@ from resources.nodes import BinaryOpNode, ProgramNode, ReturnNode
 from resources.error import *
 
 import copy
-## saraachour
+
 # =======================================================================================
 # =======================================================================================
 class Context:

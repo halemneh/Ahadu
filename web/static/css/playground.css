@@ -1,34 +1,3 @@
-body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-}
-
-header {
-    display: flex;
-    justify-content: flex-start;
-    width:100%;
-    height:60px;
-    background-color: rgb(32, 32, 32);
-    top:0;
-}
-
-.logo {
-    color: white;
-    padding: 0 0 0 5%;
-    width: 30%;
-    font-size: 13px;
-    font-weight: 100;
-}
-
-.motto {
-    color:white;
-    font-size: 10px;
-    font-weight: 50;
-    width:70%;
-    padding: 0.5% 0 0 15%;
-}
-
 .container {
     display: flex;
     height: 770px;
@@ -37,17 +6,19 @@ header {
 }
 
 .editor {
+    line-height: 21px;
     width:57%;
     height: 80%;
     border-radius: 5px;
     -webkit-box-shadow: 0px 0px 14px -4px rgba(0,0,0,0.23);
     -moz-box-shadow: 0px 0px 14px -4px rgba(0,0,0,0.23);
     box-shadow: 0px 0px 14px -4px rgba(0,0,0,0.23);
+    padding: 20px 20px 20px 20px;
 }
 
 .output {
     width:37%;
-    height: 99%;
+    height: 80%;
     -webkit-box-shadow: 0px 0px 14px -4px rgba(0,0,0,0.23);
     -moz-box-shadow: 0px 0px 14px -4px rgba(0,0,0,0.23);
     box-shadow: 0px 0px 14px -4px rgba(0,0,0,0.23);
@@ -55,7 +26,7 @@ header {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 1% 0 0 0;
+    padding: 20px 20px 20px 20px;
 }
 
 #run {
@@ -67,16 +38,21 @@ header {
     border-radius: 2px;
     color:rgb(22, 22, 22);
 }
+#run:hover {
+    background-color: rgba(234, 232, 232, 0.981);
+}
 .code {
     color: black;
-    border: none;
-    outline: none;
     border-color: transparent;
+    width: 98%;
+    height: 570px;
+    padding: 10px;
+    resize: none;
+    line-height: 21px;
 }
 #result {
-    white-space: pre-wrap;
-    border: 1px solid #ddd;
-    padding: 10px;
-    height: 200px;
-    overflow-y: auto;
+    width: 93%;
+    height: 500px;
+    padding: 20px 20px 20px 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.113);
 }

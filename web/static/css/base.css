@@ -1,0 +1,56 @@
+body{
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    font-family: myfont;
+}
+
+header{
+    width: 100%;
+    height: 70px;
+    display: flex;
+    justify-content: space-between;
+    color:white;
+    background-color: rgb(20 112 175);
+}
+
+.logo{
+    
+    padding: 1% 0 0 5%;
+    width: 30%;
+}
+.logo a{
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.896);
+    font-size: 27px;
+    font-weight:700;
+}
+
+nav{
+    align-self: flex-end;
+    width:50%;
+    height: 100%;
+    padding-left: 50%;
+}
+
+ul{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+li {
+    float: left;
+}
+
+li a{
+    display: block;
+    color:white;
+    text-decoration: none;
+    padding: 24px;
+    height: 10%;
+}
+li a:hover {
+    border-bottom: 2px solid rgba(255, 255, 255, 0.304);
+}

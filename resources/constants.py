@@ -56,6 +56,7 @@ CLASS_T = 'CLASS'
 PRINT_T = 'PRINT'
 JOIN_T = 'JOIN'
 DELETE_T = 'DELETE'
+OF_T = 'OF'
 
 KEYWORS = {
     'ቁጥር': INT_T, 
@@ -79,7 +80,7 @@ KEYWORS = {
     'ዕስከሖነ': WHILE_T,
     'ዕስከኆነ': WHILE_T,
     'ተመላሽ': RETURN_T,
-    'ፋንክሽን': FUNC_T,
+    'ተግባር': FUNC_T,
     'ክላስ': CLASS_T,
     'ወይም': OR_T,
     'እና': AND_T,
@@ -102,17 +103,19 @@ ILLEGAL_SYNTAX_ERROR = 'የተሰበረ ህግ አለ።'
 RUNTIME_ERROR = 'ያልተጠበቀ ስተት አለ።'
 
 UNKNOWN_CHARACTER_ERROR = 'የማይታወቅ ካራክተር አለ።'
-INDENTATION_ERROR = 'Indentation Error'
-RPARAM_MISSING_ERROR = 'መዝጊያ ቅንፍ ")" ተረስታል'
-RBRACKET_MISSING_ERROR = 'Missing ]'
-INT_MISSING_ERROR = 'ቁጥር ተረስታ'
-DIVISION_BY_ZERO_ERROR = 'በዘሮ ማካፈል አይቻልም'
-EXPECTED_IDENTIFIER = 'Identifier Expected'
-EXPECTED_EQUALS = 'equals sign expected'
-UNDEFINED_IDENTIFIER = 'undefined Variable'
-ILLEGAL_OPERATION = ''
-INDEX_OUT_OF_BOUNDS = 'Index ou of bounds'
+INDENTATION_ERROR = 'የመስመር መጀመሪያ ክፍተት ስተት፡'
+RPARAM_MISSING_ERROR = 'የመዝጊያ ቅንፍ ")" ረስተዋል።'
+RBRACKET_MISSING_ERROR = 'የመዝጊያ መረባ ቅንፍ "]" ረስተዋል።'
+INT_MISSING_ERROR = 'ቁጥር ረስተዋል።'
+DIVISION_BY_ZERO_ERROR = 'በዘሮ ማካፈል አይቻልም።'
+EXPECTED_IDENTIFIER = 'የተለዋቅ ስም ረስተዋል።'
+EXPECTED_EQUALS = 'የእኩል ይሆናል ምልክት "=" ረስተዋል።'
+UNDEFINED_IDENTIFIER = 'ያልታውቀ ተለዋጭ'
+ILLEGAL_OPERATION = 'ሕጋዊ ያለሆነ ተግባር'
+INDEX_OUT_OF_BOUNDS = 'Index out of bounds'
 NO_OF_ARGS_PASSED = ''
+INCOMPELTE_STR = 'ያልተሟላ ፅሑፍ'
+INCOMPLETE_EXPR = 'ያልተጨረሰ መስመር'
 
 # =======================================================================================
 # Other constants
@@ -120,5 +123,6 @@ NO_OF_ARGS_PASSED = ''
 """ Other Constants for lexer.py"""
 NUMS = '0123456789'
 ALPHANUMERAL = r'[a-zA-Z\u1200-\u135A0-9_]+'
+COMMENT_BLOCK = r'["{3}]'
 ESCAPE = {'n': '\n', 't': '\t'}
 BUILT_IN_FUNCS = (PRINT_T, JOIN_T, DELETE_T)

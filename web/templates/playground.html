@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename = 'css/playground.css')}}">
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <!-- Input half -->
+    <div class="editor">
+        <form action="/process" method="post">
+            <textarea name="code" cols="30" rows="10" placeholder="እዚህ ላይ ኮድ ይፃፉ" class="code"></textarea>
+            <input type="submit" value="RUN" id = "run">
+        </form>
+    </div>
+
+    <!-- Output half -->
+    <div class="output">
+        <div id="result">
+            {% if result == "Empty Code" %}
+            {{result}}
+            {% elif result %}
+            {% for line in result %}
+            {{line}} </br>
+            {% endfor %}
+            {% else %}
+            Results will be displayed here.
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

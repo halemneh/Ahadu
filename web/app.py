@@ -12,10 +12,17 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
+@app.route('/playground')
+def playground():
+    return render_template("playground.html")
+
 
 @app.route('/process', methods=['POST'])
 def process():
     text = request.form['code'].strip()
+    if len(text) < 1:
+        logs = "Empty Code"
+        return render_template('playground.html', result=logs)
     # Redirect standard output to capture logs
     log_output = io.StringIO()
     sys.stdout = log_output
@@ -32,7 +39,8 @@ def process():
         else:
             logs = result
     log_output.close()
-    return render_template('index.html', result=logs)
+    logs = logs.split('\n')
+    return render_template('playground.html', result=logs)
 
 
 if __name__ == '__main__':
