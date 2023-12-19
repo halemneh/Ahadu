@@ -41,7 +41,7 @@ the Token class.
 - parser_.py - contains the Parser class defintion and parse methods that parse 
 the list of tokens outputted by the lexer method into an AST made of nodes 
 defined in node.py
--interpreter.py - contains the Interpreter class defintion and visit method for
+- interpreter.py - contains the Interpreter class defintion and visit method for
 each node type from the parser execute the code associated with each node. It 
 also contains the defintion for the Context class which contains the 
 Symbol_Table for the context of execution. The Symbol_Table class is the 
@@ -52,4 +52,3 @@ defined through out the code.
 
 run.py contains the code to run the whole interpreter when a file is passed to
 it as an argument.
-
